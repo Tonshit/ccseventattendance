@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#030712" />
+<title>CCS Live Attendance - Event Admin</title>
+
+<style>
+:root{
+  --navy-950:#030712;
+  --navy-900:#070E2E;
+  --navy-800:#0A1440;
+  --navy-700:#101C57;
+  --navy-600:#182460;
+  --navy-500:#232F7A;
+  --navy-400:#3A46A0;
+  
+  /* Cyber Cyan / Electric Azure Palette (Less Yellow) */
+  --cyan-500:#0284C7;
+  --cyan-400:#38BDF8;
+  --cyan-300:#7DD3FC;
+  --cyan-200:#BAE6FD;
+  --cyan-100:#E0F2FE;
+  
+  --green:#22C55E;
+  --green-500:#0F7A50;
+  --green-100:rgba(34, 197, 94, 0.15);
+  --red:#F87171;
+  --red-100:rgba(239, 68, 68, 0.15);
+  --amber:#FDE047;
+  --amber-100:rgba(253, 224, 71, 0.15);
+  
+  --paper:#FFFFFF;
+  --mist:rgba(10, 20, 64, 0.65);
+  --line:rgba(56, 189, 248, 0.2);
+  --ink:#FFFFFF;
+  --ink-soft:rgba(186, 230, 253, 0.75);
+  --shadow:0 30px 60px rgba(0,0,0,0.75);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ min-height:100%; }
+
+body{
+  font-family:var(--font);
+  color:#fff;
+  background:var(--navy-950);
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(3, 7, 18, 0) 70%),
+    radial-gradient(60% 50% at 50% 100%, rgba(16, 28, 87, 0.45) 0%, rgba(3, 7, 18, 0) 80%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  min-height:100dvh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* Binary Matrix Canvas Background */
+#binary-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+/* Background Cyber Grid with Pulse Animation */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(circle at 50% 35%, #000 25%, transparent 85%);
+  -webkit-mask-image:radial-gradient(circle at 50% 35%, #000 25%, transparent 85%);
+  animation: gridBreathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes gridBreathe {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Ambient Cyber Glow Orbs */
+.cyber-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(65px);
+  opacity: 0.25;
+  animation: floatOrb 12s ease-in-out infinite alternate;
+}
+.cyber-orb-1 {
+  top: 10%;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--cyan-400), transparent 70%);
+}
+.cyber-orb-2 {
+  bottom: 15%;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, var(--cyan-500), transparent 70%);
+  animation-delay: -6s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, 35px) scale(1.15); }
+  100% { transform: translate(-20px, -25px) scale(0.95); }
+}
+
+/* Organizer Gate Modal Overlay */
+.gate{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:grid;
+  place-items:center;
+  padding:22px;
+  background:rgba(3, 7, 18, 0.96);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+}
+.gate.hide{ display:none; }
+
+.gate-box{
+  width:100%;
+  max-width:340px;
+  text-align:center;
+  background:rgba(7, 14, 46, 0.88);
+  border:1px solid rgba(56, 189, 248, 0.3);
+  border-radius:24px;
+  padding:28px 22px 24px;
+  box-shadow:0 30px 60px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.15);
+  animation:pop .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.gate-logo-wrapper {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+}
+
+.gate-box img{
+  width:82px;
+  height:82px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:4px;
+  object-fit:contain;
+  border:1.5px solid var(--cyan-400);
+  box-shadow:0 0 20px rgba(56, 189, 248, 0.4);
+}
+
+.gate-box h1{
+  font-size:16px;
+  font-weight:800;
+  color:#fff;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin:10px 0 4px;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.gate-box p{
+  font-size:11.5px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:600;
+  margin-bottom:18px;
+}
+
+.gate-box input{
+  width:100%;
+  border:1.5px solid rgba(56, 189, 248, 0.3);
+  background:rgba(10, 20, 64, 0.85);
+  color:#fff;
+  font-family:monospace, var(--font);
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:.35em;
+  text-align:center;
+  padding:15px;
+  border-radius:14px;
+  outline:0;
+  transition:all 0.25s ease;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.gate-box input:focus{
+  border-color:var(--cyan-400);
+  box-shadow:0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 20px rgba(56, 189, 248, 0.35), inset 0 2px 6px rgba(0,0,0,0.45);
+}
+
+.gate-err{
+  display:none;
+  font-size:11.5px;
+  color:var(--red);
+  font-weight:700;
+  margin-top:10px;
+  animation:shakeErr 0.3s ease;
+}
+@keyframes shakeErr {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.gate-err.show{ display:block; }
+.gate-hint{ font-size:10.5px; color:rgba(186, 230, 253, 0.5); margin-top:14px; font-family:monospace; }
+
+/* Sticky Top Bar */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:25;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  background:rgba(7, 14, 46, 0.85);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid rgba(56, 189, 248, 0.22);
+  box-shadow:0 4px 30px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.08) inset;
+}
+.topbar .logo{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:2px;
+  flex-shrink:0;
+  object-fit:contain;
+  border:1.5px solid var(--cyan-400);
+  box-shadow:0 0 16px rgba(56, 189, 248, 0.45);
+  transition:transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.topbar .logo:hover{
+  transform:scale(1.08) rotate(5deg);
+  box-shadow:0 0 24px rgba(56, 189, 248, 0.7);
+}
+.topbar .who{ flex:1; min-width:0; }
+.topbar .who h1{
+  font-size:15.5px;
+  font-weight:800;
+  letter-spacing:.03em;
+  background:linear-gradient(135deg, #ffffff 25%, var(--cyan-300) 70%, var(--cyan-100) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shineText 8s linear infinite;
+}
+.topbar .who p{
+  font-size:11px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:700;
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.06em;
+  opacity:0.9;
+}
+
+@keyframes shineText {
+  to { background-position: 200% center; }
+}
+
+.icon-btn{
+  width:38px;
+  height:38px;
+  flex-shrink:0;
+  border:1px solid rgba(56, 189, 248, 0.3);
+  background:rgba(10, 20, 64, 0.75);
+  border-radius:12px;
+  color:var(--cyan-300);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition:all 0.25s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,0.3);
+}
+.icon-btn:hover {
+  background:rgba(56, 189, 248, 0.18);
+  border-color:var(--cyan-400);
+  color:#ffffff;
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(56, 189, 248, 0.3);
+}
+.icon-btn svg{ width:18px; height:18px; }
+
+/* Main Container */
+.wrap{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:430px;
+  margin:0 auto;
+  padding:16px 15px calc(env(safe-area-inset-bottom) + 98px);
+  animation:shrinkContainer 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shrinkContainer {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Glassmorphism Interactive Cards */
+.card{
+  position:relative;
+  background:rgba(7, 14, 46, 0.68);
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(56, 189, 248, 0.22);
+  border-radius:24px;
+  box-shadow:0 28px 60px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.15);
+  padding:22px 18px;
+  margin-top:14px;
+  overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.card:hover{
+  border-color:rgba(56, 189, 248, 0.45);
+  box-shadow:0 34px 70px rgba(0,0,0,0.85), 0 0 30px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.card::before{
+  content:"";
+  position:absolute;
+  top:0; left:0; right:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--cyan-500), var(--cyan-300) 35%, #ffffff 50%, var(--cyan-300) 65%, var(--cyan-500));
+  background-size:200% 100%;
+  box-shadow:0 0 14px rgba(56, 189, 248, 0.7);
+  animation:stripSweep 6s linear infinite;
+}
+@keyframes stripSweep{
+  from{ background-position:0% 0; }
+  to{ background-position:200% 0; }
+}
+
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(56, 189, 248, 0.16);
+}
+.card-head h2{
+  font-size:13px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.card-head .sub{
+  font-size:11px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:600;
+}
+
+/* Attended Summary Stat Tile */
+.stats{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:14px;
+}
+.s{
+  background:rgba(10, 20, 64, 0.75);
+  border:1.5px solid rgba(56, 189, 248, 0.25);
+  border-radius:16px;
+  padding:14px 4px;
+  text-align:center;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+  transition:all 0.25s ease;
+}
+.s:hover {
+  border-color:rgba(56, 189, 248, 0.55);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(56, 189, 248, 0.2);
+}
+.s b{
+  display:block;
+  font-size:26px;
+  font-family:monospace, var(--font);
+  font-weight:900;
+  letter-spacing:-.5px;
+  line-height:1.1;
+  color:var(--cyan-300);
+  text-shadow:0 0 12px rgba(56, 189, 248, 0.5);
+}
+.s span{
+  display:block;
+  font-size:10px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(186, 230, 253, 0.75);
+  margin-top:4px;
+}
+
+/* Search Box */
+.search{ position:relative; margin-bottom:4px; }
+.search svg{
+  position:absolute;
+  left:13px;
+  top:50%;
+  transform:translateY(-50%);
+  width:17px;
+  height:17px;
+  color:var(--cyan-400);
+  pointer-events:none;
+}
+.search input{
+  width:100%;
+  border:1.5px solid rgba(56, 189, 248, 0.28);
+  background:rgba(10, 20, 64, 0.7);
+  border-radius:14px;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:600;
+  color:#ffffff;
+  padding:13px 14px 13px 38px;
+  outline:0;
+  transition:all 0.25s ease;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.search input:focus{
+  border-color:var(--cyan-400);
+  background:rgba(10, 20, 64, 0.95);
+  box-shadow:0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 16px rgba(56, 189, 248, 0.3), inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.search input::placeholder{ color:rgba(125, 211, 252, 0.4); font-weight:500; }
+
+/* Filter Chips */
+.chips{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:12px; }
+.chips::-webkit-scrollbar{ display:none; }
+.chip{
+  flex-shrink:0;
+  border:1px solid rgba(56, 189, 248, 0.3);
+  background:rgba(10, 20, 64, 0.7);
+  color:rgba(186, 230, 253, 0.8);
+  font-family:monospace, var(--font);
+  font-size:11px;
+  font-weight:800;
+  padding:7px 14px;
+  border-radius:99px;
+  cursor:pointer;
+  transition:all 0.25s ease;
+}
+.chip:hover {
+  border-color:rgba(56, 189, 248, 0.6);
+  color:#ffffff;
+}
+.chip.on{
+  background:radial-gradient(circle at center, #38bdf8 0%, #0284c7 100%);
+  border-color:rgba(255, 255, 255, 0.6);
+  color:#030712;
+  box-shadow:0 6px 20px rgba(56, 189, 248, 0.5);
+  font-weight:900;
+}
+
+/* Student Row Items — Rock-solid stable (NO twitching keyframe animations on refresh) */
+.rnum{
+  width:22px;
+  flex-shrink:0;
+  text-align:right;
+  font-size:11px;
+  font-weight:800;
+  color:rgba(186, 230, 253, 0.5);
+  font-family:monospace, var(--font);
+  font-variant-numeric:tabular-nums;
+}
+
+.row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 6px;
+  border-bottom:1px solid rgba(56, 189, 248, 0.12);
+  border-radius:10px;
+  transition:background 0.2s ease, padding 0.2s ease;
+}
+.row:hover { background:rgba(56, 189, 248, 0.06); padding-left:10px; padding-right:10px; }
+.row:last-child{ border-bottom:0; }
+
+.av{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  font-weight:900;
+  color:#ffffff;
+  background:linear-gradient(140deg, #38bdf8, #0284c7);
+  box-shadow:0 2px 10px rgba(0,0,0,0.3);
+}
+.av.late{ background:linear-gradient(140deg, #fde047, #eab308); color:#030712; }
+
+.rinfo{ flex:1; min-width:0; }
+.rinfo b{
+  display:block;
+  font-size:13.5px;
+  font-weight:800;
+  color:#ffffff;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.02em;
+}
+.rinfo span{ font-size:11px; color:rgba(186, 230, 253, 0.75); font-family:monospace, var(--font); font-weight:600; }
+
+.rtime{ text-align:right; flex-shrink:0; }
+.rtime b{ display:block; font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; color:#ffffff; }
+
+/* Event Items */
+.ev{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid rgba(56, 189, 248, 0.12);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.ev:last-child{ border-bottom:0; }
+.ev.sel{
+  background:rgba(56, 189, 248, 0.12);
+  border:1px solid rgba(56, 189, 248, 0.3);
+  border-radius:14px;
+  padding:12px 12px;
+  cursor:default;
+  box-shadow:0 4px 18px rgba(0,0,0,0.3);
+}
+.ev-b{ flex:1; min-width:0; }
+.ev-b .nm{
+  font-size:14px;
+  font-weight:800;
+  color:#ffffff;
+  margin:5px 0 3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.02em;
+}
+.ev-b .mt{ font-size:11px; color:rgba(186, 230, 253, 0.75); font-family:monospace, var(--font); font-weight:600; line-height:1.5; }
+.ev-r{ text-align:right; flex-shrink:0; }
+.ev-r b{ display:block; font-size:18px; font-family:monospace, var(--font); font-weight:900; color:var(--cyan-300); line-height:1.1; }
+.ev-r span{ font-size:9px; font-family:monospace, var(--font); font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:rgba(186, 230, 253, 0.7); }
+
+.badge-active{
+  display:inline-block;
+  font-size:9px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#030712;
+  background:linear-gradient(135deg, var(--cyan-300), var(--cyan-400));
+  border-radius:6px;
+  padding:3px 8px;
+  margin-top:6px;
+  box-shadow:0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* Status Badges */
+.ty{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:9.5px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border-radius:99px;
+  white-space:nowrap;
+  border:1px solid rgba(56, 189, 248, 0.35);
+  backdrop-filter:blur(10px);
+}
+.ty i{ width:6px; height:6px; border-radius:50%; flex-shrink:0; box-shadow:0 0 6px currentColor; }
+
+/* Interactive Cursor-Tracking Glow Buttons */
+.btn{
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position:relative;
+  width:100%;
+  border-radius:14px;
+  padding:14px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  overflow:hidden;
+  text-decoration:none;
+  border:none;
+  outline:none;
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.btn::before {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  opacity:0;
+  transform:scale(0.6);
+  transition:opacity 0.3s ease, transform 0.3s ease;
+}
+.btn:hover::before { opacity:1; transform:scale(1); }
+.btn svg{ width:17px; height:17px; }
+
+.btn.line{
+  background:radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(56, 189, 248, 0.18) 0%, rgba(10, 20, 64, 0.6) 80%);
+  color:#fff;
+  border:1px solid rgba(56, 189, 248, 0.3);
+  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+}
+.btn.line:hover{
+  background:rgba(56, 189, 248, 0.18);
+  border-color:rgba(56, 189, 248, 0.6);
+  transform:translateY(-2px) scale(1.015);
+  box-shadow:0 8px 28px rgba(0,0,0,0.5), 0 0 16px rgba(56, 189, 248, 0.25);
+}
+.btn.line:active{ transform:translateY(1px) scale(0.985); }
+.btn + .btn{ margin-top:10px; }
+
+.empty{ text-align:center; padding:28px 10px; color:rgba(186, 230, 253, 0.75); font-size:13px; font-weight:600; line-height:1.6; }
+
+/* 6-Column Fixed Admin Navigation Bar */
+.nav{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:0;
+  z-index:999;
+  width:100%;
+  max-width:430px;
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  background:rgba(7, 14, 46, 0.94);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(56, 189, 248, 0.25);
+  padding:10px 4px calc(env(safe-area-inset-bottom) + 10px);
+  box-shadow:0 -10px 35px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255,255,255,0.08) inset;
+  pointer-events:auto;
+}
+.nav a{
+  text-decoration:none;
+  color:rgba(255, 255, 255, 0.5);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.04em;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:5px 0;
+  transition:color .2s;
+  text-transform:uppercase;
+}
+.nav a svg{ width:19px; height:19px; }
+.nav a:hover{ color:var(--cyan-300); }
+.nav a.active{
+  color:var(--cyan-300);
+  text-shadow:0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+/* Cyber Glowing Toast */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:calc(env(safe-area-inset-bottom) + 84px);
+  transform:translate(-50%,220%);
+  min-width:240px;
+  max-width:calc(100% - 34px);
+  background:rgba(7, 14, 46, 0.95);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  color:#fff;
+  border:1px solid rgba(56, 189, 248, 0.45);
+  font-size:13px;
+  font-weight:700;
+  padding:13px 18px;
+  border-radius:14px;
+  box-shadow:0 16px 45px rgba(0,0,0,0.75), 0 0 25px rgba(56, 189, 248, 0.3);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .35s ease;
+  z-index:60;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+.toast.show{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:translate(-50%,0);
+}
+.toast.bad{
+  background:rgba(142, 32, 32, 0.95);
+  border-color:rgba(248, 113, 113, 0.55);
+  box-shadow:0 16px 45px rgba(0,0,0,0.75), 0 0 25px rgba(239, 68, 68, 0.4);
+}
+.toast svg{ width:18px; height:18px; flex-shrink:0; color:var(--cyan-300); }
+</style>
+</head>
+
+<body>
+
+<!-- Ambient Cyber Glow Orbs -->
+<div class="cyber-orb cyber-orb-1"></div>
+<div class="cyber-orb cyber-orb-2"></div>
+
+<!-- Binary Matrix Rain Canvas -->
+<canvas id="binary-canvas"></canvas>
+
+<!-- Organizer Gate Modal Overlay -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-logo-wrapper">
+      <img id="gateLogo" src="logo.png" alt="CCS Logo" />
+    </div>
+    <h1>Event Admin</h1>
+    <p>&lt;Organizer Access Only /&gt;</p>
+    <input type="password" id="gatePin" inputmode="numeric" placeholder="PASSCODE" maxlength="10" autocomplete="off" />
+    <div class="gate-err" id="gateErr">Incorrect passcode.</div>
+    <button class="btn navy glow-btn" id="gateBtn" style="margin-top:16px">
+      <span>Unlock Dashboard</span>
+    </button>
+    <div class="gate-hint" id="gateHint"></div>
+  </div>
+</div>
+
+<header class="topbar">
+  <img class="logo" id="brandLogo" src="logo.png" alt="CCS Logo" />
+  <div class="who">
+    <h1>Live Attendance</h1>
+    <p id="shellSub">Organizer</p>
+  </div>
+  <button class="icon-btn" id="lock" aria-label="Lock">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+    </svg>
+  </button>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Now Showing</h2>
+      <span class="sub" id="liveState"></span>
+    </div>
+    <div id="headBox"></div>
+    <button class="btn line glow-btn" id="backLive" style="display:none;margin-top:12px;padding:11px;font-size:11px">
+      <span>Back to Current Event</span>
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="s t">
+      <b id="cTotal">0</b>
+      <span>Attended</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Live Attendance</h2>
+      <span class="sub" id="listCount"></span>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="text" id="search" placeholder="Search name or ID" />
+    </div>
+    <div class="chips" id="sortChips" style="margin-top:12px">
+      <button class="chip on" data-s="az">A to Z</button>
+      <button class="chip" data-s="latest">Latest First</button>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Export Reports</h2>
+    </div>
+    <button class="btn line glow-btn" id="exportPdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/>
+      </svg>
+      <span>Export PDF (Present Only)</span>
+    </button>
+    <button class="btn line glow-btn" id="exportFull">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/>
+      </svg>
+      <span>Export Full Report (Present + Absent)</span>
+    </button>
+  </div>
+
+</div>
+
+<nav class="nav">
+  <a href="event-admin.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 10h2M11 10h2M15 10h2M7 14h10"/></svg><span>Code</span></a>
+  <a href="event-select.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h9"/><path d="m17 16 2 2 3-3.5"/></svg><span>Select</span></a>
+  <a href="event-list.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>List</span></a>
+  <a href="event-live.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 19c.9-3.5 3.4-5.3 6-5.3s5.1 1.8 6 5.3M17 8h4M19 6v4"/></svg><span>Live</span></a>
+  <a href="event-absent.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg><span>Absent</span></a>
+  <a href="admin-about.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>About</span></a>
+</nav>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5 5L20 6.5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+const CONFIG = {
+  LOGO_SRC: "logo.png",
+  SHOW_HINT: false,
+  ORGANIZER: "CCS Student Council",
+  GRACE_MINUTES: 15,
+  CODE_LENGTH: 5,
+  TYPES: [
+    { id:"assembly",      label:"General Assembly",      c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" },
+    { id:"seminar",       label:"Seminar / Talk",        c:"#7DD3FC", bg:"rgba(125, 211, 252, 0.15)" },
+    { id:"workshop",      label:"Workshop / Training",   c:"#22C55E", bg:"rgba(34, 197, 94, 0.15)" },
+    { id:"orientation",   label:"Orientation",           c:"#A78BFA", bg:"rgba(167, 139, 250, 0.15)" },
+    { id:"meeting",       label:"Meeting / Org Mtg",     c:"#94A3B8", bg:"rgba(148, 163, 184, 0.15)" },
+    { id:"competition",   label:"Quiz Bee / Contest",    c:"#F87171", bg:"rgba(248, 113, 113, 0.15)" },
+    { id:"sports",        label:"Sports Fest",           c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" },
+    { id:"recognition",   label:"Recognition / Awards",  c:"#BAE6FD", bg:"rgba(186, 230, 253, 0.15)" },
+    { id:"outreach",      label:"Outreach / Community",  c:"#7DD3FC", bg:"rgba(125, 211, 252, 0.15)" },
+    { id:"fieldtrip",     label:"Field Trip / Immersion",c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" },
+    { id:"fundraising",   label:"Fundraising",           c:"#22C55E", bg:"rgba(34, 197, 94, 0.15)" },
+    { id:"graduation",    label:"Graduation / Moving Up",c:"#E0F2FE", bg:"rgba(224, 242, 254, 0.15)" },
+    { id:"exhibit",       label:"Exhibit / Fair",        c:"#A78BFA", bg:"rgba(167, 139, 250, 0.15)" },
+    { id:"debut",         label:"Debut / Ball",          c:"#BAE6FD", bg:"rgba(186, 230, 253, 0.15)" },
+    { id:"practice",      label:"Practice / Rehearsal",  c:"#94A3B8", bg:"rgba(148, 163, 184, 0.15)" }
+  ],
+  SEED: []
+};
+
+const K_EV = "ccs_ev";
+const K_ATT = "ccs_ev_att";
+const K_ACTIVE = "ccs_ev_active";
+const K_ROSTER = "ccs_admin_roster";
+const K_UNLOCK = "ccs_ev_admin_unlocked";
+const K_HIST = "ccs_ev_history";
+const K_HISTV = "ccs_ev_history_view";
+const K_PASS = "ccs_admin_pass";
+const K_PROFILES = "ccs_students";
+const K_AUTH = "ccs_student_auth";
+const K_NAMES = "ccs_ev_names";
+const EXPORT_TTL_MS = 24 * 60 * 60 * 1000;
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+let events = [];
+let att = {};
+let names = {};
+let active = null;
+
+function read(key, fb){
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fb;
+  } catch(e){ return fb; }
+}
+
+function write(key, val){
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e){ return false; }
+}
+
+function minutesOf(hhmm){
+  const p = String(hhmm).split(':');
+  return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+}
+
+function isEventEnded(ev){
+  if (!ev) return false;
+  const endMin = minutesOf(ev.end || '23:59');
+  const endAt = new Date(ev.date + 'T00:00:00').getTime() + endMin * 60000;
+  return Date.now() >= endAt;
+}
+
+const OUT_GRACE_MS = 60 * 60 * 1000;
+function inOutGrace(ev){
+  if (!ev) return false;
+  const endMin = minutesOf(ev.end || '23:59');
+  const endAt = new Date(ev.date + 'T00:00:00').getTime() + endMin * 60000;
+  const now = Date.now();
+  return now >= endAt && now < endAt + OUT_GRACE_MS;
+}
+
+function archiveEndedEvents(){
+  var hist = read(K_HIST, []);
+  var kept = [];
+  var moved = false;
+  events.forEach(function(e){
+    if (isEventEnded(e) && !inOutGrace(e)){
+      if (!hist.some(function(h){ return h.id === e.id; })){
+        e.open = false;
+        e.archivedAt = Date.now();
+        hist.push(e);
+      }
+      moved = true;
+    } else {
+      kept.push(e);
+    }
+  });
+  if (!moved) return;
+  events = kept;
+  write(K_EV, events);
+  write(K_HIST, hist);
+  if (active && !events.some(function(e){ return e.id === active; })){
+    active = events.length ? events[0].id : null;
+    try {
+      if (active) localStorage.setItem(K_ACTIVE, active);
+      else localStorage.removeItem(K_ACTIVE);
+    } catch(e){}
+  }
+}
+
+function cleanupExported(){
+  var now = Date.now();
+  var attChanged = false;
+
+  var keptEv = events.filter(function(e){
+    if (e.exportedAt && now - e.exportedAt > EXPORT_TTL_MS){
+      delete att[e.id];
+      attChanged = true;
+      return false;
+    }
+    return true;
+  });
+  if (keptEv.length !== events.length){
+    events = keptEv;
+    write(K_EV, events);
+    if (active && !events.some(function(e){ return e.id === active; })){
+      active = events.length ? events[0].id : null;
+      try {
+        if (active) localStorage.setItem(K_ACTIVE, active);
+        else localStorage.removeItem(K_ACTIVE);
+      } catch(e){}
+    }
+  }
+
+  var hist = read(K_HIST, []);
+  var keptH = hist.filter(function(h){
+    if (h.exportedAt && now - h.exportedAt > EXPORT_TTL_MS){
+      delete att[h.id];
+      attChanged = true;
+      try {
+        if (localStorage.getItem(K_HISTV) === h.id) localStorage.removeItem(K_HISTV);
+      } catch(e){}
+      return false;
+    }
+    return true;
+  });
+  if (keptH.length !== hist.length) write(K_HIST, keptH);
+  if (attChanged) write(K_ATT, att);
+}
+
+function markExported(id){
+  var now = Date.now();
+  var found = false;
+  events.forEach(function(e){ if (e.id === id){ e.exportedAt = now; found = true; } });
+  if (found){ write(K_EV, events); return; }
+  var hist = read(K_HIST, []);
+  hist.forEach(function(h){ if (h.id === id) h.exportedAt = now; });
+  write(K_HIST, hist);
+}
+
+function fmt(mins){
+  let h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + pad(m) + ' ' + ap;
+}
+
+function prettyDate(key){
+  const d = new Date(key + 'T00:00:00');
+  return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function initials(name){
+  const parts = String(name).replace(',', '').split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  return ((parts[0][0] || '') + (parts.length > 1 ? parts[1][0] : '')).toUpperCase();
+}
+
+function esc(v){
+  return String(v).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+
+function typeOf(tid){
+  const hit = CONFIG.TYPES.filter(function(t){ return t.id === tid; });
+  return hit.length ? hit[0] : { id:"other", label:"Event", c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" };
+}
+
+function typeBadge(tid){
+  const t = typeOf(tid);
+  return '<span class="ty" style="background:' + t.bg + ';color:' + t.c + ';border-color:' + t.c + '"><i style="background:' + t.c + '"></i>' + t.label + '</span>';
+}
+
+let toastTimer;
+function toast(msg, bad){
+  const t = $('toast');
+  $('toastMsg').textContent = msg;
+  t.className = 'toast show' + (bad ? ' bad' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+function loadNames(){
+  names = {};
+  read(K_ROSTER, []).forEach(function(s){ names[s.id] = s.name; });
+  const extra = read('ccs_ev_names', {});
+  Object.keys(extra).forEach(function(id){ if (!names[id]) names[id] = extra[id]; });
+}
+
+function registeredIds(){
+  var ids = {};
+  var profiles = read(K_PROFILES, {});
+  Object.keys(profiles).forEach(function(id){ if (id && id.length > 3) ids[id] = true; });
+  var auth = read(K_AUTH, {});
+  Object.keys(auth).forEach(function(id){ if (id && id.length > 3) ids[id] = true; });
+  var nm = read(K_NAMES, {});
+  Object.keys(nm).forEach(function(id){ if (id && id.length > 3) ids[id] = true; });
+  return Object.keys(ids);
+}
+
+function profileOf(id){
+  var profiles = read(K_PROFILES, {});
+  if (profiles[id]) return profiles[id];
+  var nm = read(K_NAMES, {});
+  if (nm[id]) return { name: nm[id], course: '', year: '' };
+  return { name: id, course: '', year: '' };
+}
+
+function buildFullRoster(){
+  var e = entries();
+  var map = {};
+
+  registeredIds().forEach(function(id){
+    var info = profileOf(id);
+    map[id] = {
+      id: id,
+      name: info.name || id,
+      course: info.course || '',
+      year: info.year || '',
+      present: false,
+      at: null,
+      out: null
+    };
+  });
+
+  Object.keys(e).forEach(function(id){
+    var r = e[id];
+    if (!map[id]){
+      map[id] = { id: id, name: '', course: '', year: '', present: false, at: null, out: null };
+    }
+    map[id].name = r.name || map[id].name || nameOf(id);
+    map[id].course = r.course || map[id].course;
+    map[id].year = r.year || map[id].year;
+    map[id].present = true;
+    map[id].at = r.at;
+    map[id].out = (r.out != null) ? r.out : null;
+  });
+
+  return Object.keys(map).map(function(k){ return map[k]; });
+}
+
+function loadAll(){
+  events = read(K_EV, null);
+  if (!events){
+    events = CONFIG.SEED.map(function(e){
+      return { id:uid(), name:e.name, type:e.type, venue:e.venue, date:isoToday(), start:e.start, end:e.end || '17:00', code:makeCode(), open:true };
+    });
+    write(K_EV, events);
+  }
+  if (!Array.isArray(events)) events = [];
+  att = read(K_ATT, {});
+  try { active = localStorage.getItem(K_ACTIVE); } catch(e){}
+  if (!active || !events.some(function(e){ return e.id === active; })) active = events.length ? events[0].id : null;
+  archiveEndedEvents();
+  cleanupExported();
+}
+
+function syncAll(){
+  events = read(K_EV, events);
+  att = read(K_ATT, {});
+  try { active = localStorage.getItem(K_ACTIVE) || active; } catch(e){}
+  if (!events.some(function(e){ return e.id === active; })) active = events.length ? events[0].id : null;
+  archiveEndedEvents();
+  cleanupExported();
+}
+
+function currentEvent(){
+  var hv = null;
+  try { hv = localStorage.getItem(K_HISTV); } catch(e){}
+  if (hv){
+    var h = read(K_HIST, []).filter(function(e){ return e.id === hv; })[0];
+    if (h) return h;
+  }
+  return events.filter(function(e){ return e.id === active; })[0] || null;
+}
+
+function isHistView(){
+  var ev = currentEvent();
+  return !!ev && !events.some(function(e){ return e.id === ev.id; });
+}
+
+function entries(){
+  var ev = currentEvent();
+  return ev ? (att[ev.id] || {}) : {};
+}
+
+function headsOf(evId){
+  return Object.keys(att[evId] || {}).length;
+}
+
+function setActive(id){
+  active = id;
+  try { localStorage.setItem(K_ACTIVE, id); } catch(e){}
+}
+
+function shellSub(text){
+  const el = $('shellSub');
+  if (el) el.textContent = text;
+}
+
+$('gateBtn').addEventListener('click', function(){
+  if (read(K_PASS, null) && $('gatePin').value === read(K_PASS, null)){
+    $('gateErr').classList.remove('show');
+    $('gate').classList.add('hide');
+    try { sessionStorage.setItem(K_UNLOCK, '1'); } catch(e){}
+  } else {
+    $('gateErr').classList.add('show');
+    $('gatePin').value = '';
+    if (navigator.vibrate) navigator.vibrate(70);
+  }
+});
+
+$('gatePin').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') $('gateBtn').click();
+});
+
+$('lock').addEventListener('click', function(){
+  try { sessionStorage.removeItem(K_UNLOCK); } catch(e){}
+  $('gatePin').value = '';
+  $('gate').classList.remove('hide');
+});
+
+function initShell(){
+  const src = (CONFIG.LOGO_SRC || '').trim();
+  [$('brandLogo'), $('gateLogo')].forEach(function(img){
+    if (!img) return;
+    img.src = src || "logo.png";
+    img.onerror = function(){ img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23070E2E' stroke='%2338BDF8' stroke-width='4'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%237DD3FC' font-size='22' font-weight='900' font-family='monospace'%3ECCS%3C/text%3E%3C/svg%3E"; };
+  });
+
+  $('gateHint').innerHTML = '';
+
+  let unlocked = false;
+  try { unlocked = sessionStorage.getItem(K_UNLOCK) === '1'; } catch(e){}
+  if (unlocked) $('gate').classList.add('hide');
+
+  loadNames();
+  loadAll();
+}
+
+let query = "";
+let lastCount = 0;
+let sortMode = "az";
+
+function nameOf(id){
+  const r = entries()[id] || {};
+  return r.name || names[id] || 'Unregistered';
+}
+
+function sortedIds(){
+  const e = entries();
+  const ids = Object.keys(e);
+  ids.sort(function(a, b){
+    if (sortMode === 'latest') return (e[b].at || 0) - (e[a].at || 0);
+    return nameOf(a).localeCompare(nameOf(b), undefined, { sensitivity:'base' });
+  });
+  return ids;
+}
+
+function renderHead(){
+  const ev = currentEvent();
+  if (!ev){
+    $('headBox').innerHTML = '<div class="empty">No active event right now.<br>Ended events are under History on the Select page.</div>';
+    $('liveState').textContent = '';
+    $('backLive').style.display = 'none';
+    return;
+  }
+  var histMode = isHistView();
+  $('liveState').textContent = histMode ? 'Ended \u00b7 History' : (ev.open ? 'Open' : (isEventEnded(ev) ? 'Ended' : 'Closed'));
+  $('backLive').style.display = histMode ? '' : 'none';
+  $('headBox').innerHTML = '<div class="ev sel" style="cursor:default">' +
+    '<div class="ev-b">' + typeBadge(ev.type) +
+    '<div class="nm">' + esc(ev.name) + '</div>' +
+    '<div class="mt">' + prettyDate(ev.date) + ' &middot; ' + fmt(minutesOf(ev.start)) + ' - ' + fmt(minutesOf(ev.end || '17:00')) + ' &middot; ' + esc(ev.venue) + '</div>' +
+    (histMode ? '<span class="ty" style="background:rgba(56,189,248,0.2);color:var(--cyan-300);border-color:var(--cyan-400);margin-top:5px;">History - event ended</span>' : '') +
+    '</div>' +
+    '<div class="ev-r"><b>' + headsOf(ev.id) + '</b><span>heads</span></div></div>';
+
+  shellSub(ev.name + (histMode ? ' (history)' : ''));
+}
+
+$('backLive').addEventListener('click', function(){
+  try { localStorage.removeItem(K_HISTV); } catch(e){}
+  refresh();
+});
+
+function renderStats(){
+  const e = entries();
+  const ids = Object.keys(e);
+  $('cTotal').textContent = ids.length;
+}
+
+// Rock-solid student list rendering: NO twitching keyframe animations on interval updates!
+function renderList(){
+  const e = entries();
+  const q = query.toLowerCase();
+
+  const ids = sortedIds().filter(function(id){
+    if (!q) return true;
+    return id.toLowerCase().indexOf(q) > -1 || nameOf(id).toLowerCase().indexOf(q) > -1;
+  });
+
+  const total = Object.keys(e).length;
+  $('listCount').textContent = q
+    ? ids.length + ' of ' + total
+    : total + (total === 1 ? ' student' : ' students');
+
+  if (!ids.length){
+    var emptyMsg = q ? 'No match found.' : (isHistView() ? 'No attendance recorded for this event.' : 'Waiting for students to check in...');
+    $('list').innerHTML = '<div class="empty">' + emptyMsg + '</div>';
+    return;
+  }
+
+  $('list').innerHTML = ids.map(function(id, i){
+    const r = e[id];
+    const nm = nameOf(id);
+    const cy = [r.course, r.year].filter(Boolean).join(' ');
+    return '<div class="row">' +
+      '<div class="rnum">' + (i + 1) + '</div>' +
+      '<div class="av' + (r.late ? ' late' : '') + '">' + initials(nm) + '</div>' +
+      '<div class="rinfo"><b>' + esc(nm) + '</b><span>' + esc(id) + (cy ? ' &middot; ' + esc(cy) : '') + '</span></div>' +
+      '<div class="rtime"><b>' + fmt(r.at) + '</b>' + (r.out != null ? '<br><span style="font-size:10px;font-family:monospace;font-weight:700;color:var(--cyan-300)">out ' + fmt(r.out) + (r.outOnly ? ' · out only' : '') + '</span>' : '') + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderAll(){
+  renderHead();
+  renderStats();
+  renderList();
+}
+
+var audioCtx = null;
+function playDing(){
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    var t = audioCtx.currentTime;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.type = 'sine';
+    o.frequency.setValueAtTime(880, t);
+    o.frequency.setValueAtTime(1320, t + 0.12);
+    g.gain.setValueAtTime(0.18, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+    o.start(t);
+    o.stop(t + 0.5);
+  } catch(e){}
+}
+
+function refresh(){
+  syncAll();
+  const n = Object.keys(entries()).length;
+  if (n !== lastCount){
+    if (n > lastCount && lastCount !== 0){
+      toast('New check-in recorded');
+      playDing();
+      try { if (navigator.vibrate) navigator.vibrate([60, 40, 60]); } catch(e){}
+    }
+    lastCount = n;
+  }
+  renderAll();
+}
+
+$('search').addEventListener('input', function(e){
+  query = e.target.value.trim();
+  renderList();
+});
+
+$('sortChips').querySelectorAll('.chip').forEach(function(c){
+  c.addEventListener('click', function(){
+    $('sortChips').querySelectorAll('.chip').forEach(function(x){ x.classList.remove('on'); });
+    c.classList.add('on');
+    sortMode = c.dataset.s;
+    renderList();
+  });
+});
+
+function pdfSchoolHeader(doc, pageW, opts){
+  opts = opts || {};
+  var logoImg = null;
+  try { logoImg = CONFIG.LOGO_SRC; } catch(e){}
+  if (logoImg) {
+    try { doc.addImage(logoImg, 'PNG', 16, 18, 30, 30); } catch(e){}
+  }
+  doc.setFont('times', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(33, 96, 154);
+  doc.text('COLLEGE OF COMPUTER STUDIES', pageW / 2, 30, { align: 'center' });
+  doc.setFont('times', 'normal');
+  doc.setFontSize(12);
+  doc.setTextColor(0, 0, 0);
+  doc.text('COLEGIO DE SAN FRANCISCO JAVIER INC.', pageW / 2, 38, { align: 'center' });
+  doc.text('EAST POBLACION RIZAL ZAMBOANGA DEL NORTE, 7104', pageW / 2, 43, { align: 'center' });
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.4);
+  doc.line(15, 47, pageW - 15, 47);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(12);
+  doc.text(opts.title || 'ATTENDANCE', pageW / 2, 63, { align: 'center' });
+  if (opts.subtitle) {
+    doc.setFont('times', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(30, 30, 30);
+    doc.text(opts.subtitle, pageW / 2, 69, { align: 'center' });
+  }
+  if (opts.meta) {
+    doc.setFont('times', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    doc.text(opts.meta, pageW / 2, 73.5, { align: 'center' });
+  }
+  if (opts.right) {
+    doc.setFont('times', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(opts.right, pageW - 15, 79, { align: 'right' });
+  }
+  return 80;
+}
+
+// PDF Export - Present Only
+$('exportPdf').addEventListener('click', function(){
+  const ev = currentEvent();
+  const e = entries();
+  const ids = Object.keys(e);
+  if (!ev || !ids.length){ toast('No attendance yet', true); return; }
+
+  if (typeof window.jspdf === 'undefined' && typeof jspdf === 'undefined') {
+    toast('PDF library not loaded - check internet', true);
+    return;
+  }
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'letter');
+  const pageW = 215.9;
+  const pageH = 279.4;
+  const margin = 20;
+  const contentW = pageW - margin * 2;
+  
+  const years = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+  const today = prettyDate(ev.date);
+  
+  toast('Generating PDF with ' + ids.length + ' students...');
+
+  var pageNum = 0;
+  
+  years.forEach(function(yearLabel){
+    var students = ids.filter(function(id){
+      var rec = e[id];
+      return rec.year === yearLabel || (!rec.year && yearLabel === '1st Year');
+    }).sort(function(a, b){
+      return nameOf(a).localeCompare(nameOf(b), undefined, { sensitivity:'base' });
+    });
+    
+    if (pageNum > 0) doc.addPage();
+    pageNum++;
+    
+    var y = pdfSchoolHeader(doc, pageW, {
+      title: 'ATTENDANCE',
+      subtitle: esc(ev.name),
+      meta: today + '  \u00b7  ' + esc(ev.venue),
+      right: yearLabel + '  \u00b7  Total: ' + students.length + ' attendee(s)'
+    });
+    
+    if (students.length === 0) {
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text('No attendees for this year level.', pageW/2, margin + 50, { align: 'center' });
+      return;
+    }
+    
+    var colW = [8, 54, 30, 28, 28, 22];
+    var colX = [margin];
+    for (var c = 1; c < colW.length; c++) {
+      colX.push(colX[c-1] + colW[c-1]);
+    }
+    
+    doc.setFont('times', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    var headers = ['#', 'Student Name', 'School ID', 'Course', 'Time In', 'Time Out'];
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 7, pageW - margin, y + 7);
+    for (var c = 0; c < headers.length; c++) {
+      doc.text(headers[c], colX[c] + 2, y + 4.5);
+    }
+    y += 7;
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    var isAlt = false;
+    
+    students.forEach(function(id, i){
+      if (y > pageH - margin - 20) {
+        doc.addPage();
+        y = 15;
+        doc.setFont('times', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y + 7, pageW - margin, y + 7);
+        for (var c = 0; c < headers.length; c++) {
+          doc.text(headers[c], colX[c] + 2, y + 4.5);
+        }
+        y += 7;
+        doc.setTextColor(0, 0, 0);
+      }
+      
+      if (isAlt) {
+        doc.setFillColor(244, 246, 251);
+        doc.rect(margin, y, contentW, 6, 'F');
+      }
+      isAlt = !isAlt;
+      
+      doc.text(String(i + 1), colX[0] + 2, y + 4);
+      doc.text(esc(nameOf(id)), colX[1] + 2, y + 4);
+      doc.text(esc(id), colX[2] + 2, y + 4);
+      doc.text(e[id].course || 'BSIT', colX[3] + 2, y + 4);
+      doc.text(fmt(e[id].at), colX[4] + 2, y + 4);
+      doc.text(e[id].out != null ? fmt(e[id].out) : '--', colX[5] + 2, y + 4);
+      
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.15);
+      doc.line(margin, y, pageW - margin, y);
+      doc.line(margin, y + 6, pageW - margin, y + 6);
+      
+      y += 6;
+    });
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, pageH - 12, pageW - margin, pageH - 12);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(90, 90, 90);
+    doc.text('Generated by CCS Event Management System  \u00b7  ' + (CONFIG.ORGANIZER || 'CCS Student Council'), pageW/2, pageH - 7, { align: 'center' });
+  });
+  
+  var filename = 'attendance-' + ev.date + '-' + ev.name.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase() + '.pdf';
+  doc.save(filename);
+
+  markExported(ev.id);
+  toast('PDF exported: ' + ids.length + ' students - data auto-deletes in 24 hours');
+});
+
+// Combined Full Report PDF
+$('exportFull').addEventListener('click', function(){
+  const ev = currentEvent();
+  if (!ev){ toast('No event selected', true); return; }
+
+  var roster = buildFullRoster();
+  if (!roster.length){ toast('No registered students yet', true); return; }
+
+  if (typeof window.jspdf === 'undefined' && typeof jspdf === 'undefined') {
+    toast('PDF library not loaded - check internet', true);
+    return;
+  }
+
+  var presentN = roster.filter(function(s){ return s.present; }).length;
+  var absentN = roster.length - presentN;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'letter');
+  const pageW = 215.9;
+  const pageH = 279.4;
+  const margin = 20;
+  const contentW = pageW - margin * 2;
+
+  const today = prettyDate(ev.date);
+  var years = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+  var pageNum = 0;
+
+  toast('Generating full report: ' + presentN + ' present, ' + absentN + ' absent...');
+
+  years.forEach(function(yearLabel){
+    var students = roster.filter(function(s){
+      return s.year === yearLabel || (!s.year && yearLabel === '1st Year');
+    }).sort(function(a, b){
+      return a.name.localeCompare(b.name, undefined, { sensitivity:'base' });
+    });
+
+    if (pageNum > 0) doc.addPage();
+    pageNum++;
+
+    var yp = students.filter(function(s){ return s.present; }).length;
+    var ya = students.length - yp;
+    var y = pdfSchoolHeader(doc, pageW, {
+      title: 'FULL REPORT',
+      subtitle: esc(ev.name),
+      meta: today + '  \u00b7  ' + esc(ev.venue),
+      right: yearLabel + '  \u00b7  Present: ' + yp + '  Absent: ' + ya
+    });
+
+    if (!students.length) {
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text('No registered students for this year level.', pageW/2, margin + 50, { align: 'center' });
+      return;
+    }
+
+    var colW = [8, 48, 30, 26, 22, 22, 18];
+    var colX = [margin];
+    for (var c = 1; c < colW.length; c++) colX.push(colX[c-1] + colW[c-1]);
+
+    var headers = ['#', 'Student Name', 'School ID', 'Course', 'Time In', 'Time Out', 'Status'];
+    doc.setFont('times', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 7, pageW - margin, y + 7);
+    for (var c = 0; c < headers.length; c++) doc.text(headers[c], colX[c] + 2, y + 4.5);
+    y += 7;
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    var isAlt = false;
+
+    students.forEach(function(s, i){
+      if (y > pageH - margin - 20) {
+        doc.addPage();
+        y = 15;
+        doc.setFont('times', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(0, 0, 0);
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, y + 7, pageW - margin, y + 7);
+        for (var c = 0; c < headers.length; c++) doc.text(headers[c], colX[c] + 2, y + 4.5);
+        y += 7;
+      }
+
+      if (isAlt) {
+        doc.setFillColor(244, 246, 251);
+        doc.rect(margin, y, contentW, 6, 'F');
+      }
+      isAlt = !isAlt;
+
+      doc.setTextColor(0, 0, 0);
+      doc.text(String(i + 1), colX[0] + 2, y + 4);
+      doc.text(esc(s.name), colX[1] + 2, y + 4);
+      doc.text(esc(s.id), colX[2] + 2, y + 4);
+      doc.text(s.course || 'BSIT', colX[3] + 2, y + 4);
+      doc.text(s.present && s.at !== null ? fmt(s.at) : '--', colX[4] + 2, y + 4);
+      doc.text(s.present && s.out != null ? fmt(s.out) : '--', colX[5] + 2, y + 4);
+
+      if (s.present) doc.setTextColor(15, 122, 80);
+      else doc.setTextColor(214, 69, 69);
+      doc.text(s.present ? 'PRESENT' : 'ABSENT', colX[6] + 2, y + 4);
+      doc.setTextColor(0, 0, 0);
+
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.15);
+      doc.line(margin, y, pageW - margin, y);
+      doc.line(margin, y + 6, pageW - margin, y + 6);
+
+      y += 6;
+    });
+
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin, pageH - 12, pageW - margin, pageH - 12);
+    doc.setFont('times', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(90, 90, 90);
+    doc.text('Generated by CCS Event Management System  \u00b7  ' + (CONFIG.ORGANIZER || 'CCS Student Council'), pageW/2, pageH - 7, { align: 'center' });
+  });
+
+  var filename = 'full-report-' + ev.date + '-' + ev.name.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase() + '.pdf';
+  doc.save(filename);
+
+  markExported(ev.id);
+  toast('Full report exported: ' + presentN + ' present / ' + absentN + ' absent - data auto-deletes in 24 hours');
+});
+
+// Glow Tracking for Buttons
+document.querySelectorAll('.glow-btn').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    btn.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  });
+});
+
+// Binary Matrix Rain
+const canvas = document.getElementById('binary-canvas');
+if (canvas) {
+  const ctx = canvas.getContext('2d');
+  let width, height, columns, drops;
+  const fontSize = 14;
+  const chars = ['0', '1'];
+
+  function initBinaryCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    drops = Array.from({ length: columns }, () => Math.floor(Math.random() * -50));
+  }
+
+  function drawBinaryRain() {
+    ctx.fillStyle = 'rgba(3, 7, 18, 0.16)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.font = `${fontSize}px monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      if (i % 8 === 0) {
+        ctx.fillStyle = '#ffffff';
+      } else if (i % 3 === 0) {
+        ctx.fillStyle = '#7dd3fc';
+      } else {
+        ctx.fillStyle = '#38bdf8';
+      }
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  function animateBinary() {
+    drawBinaryRain();
+    setTimeout(() => {
+      requestAnimationFrame(animateBinary);
+    }, 45);
+  }
+
+  window.addEventListener('resize', initBinaryCanvas);
+  initBinaryCanvas();
+  animateBinary();
+}
+
+// 3D Card Interactive Tilt
+const cards = document.querySelectorAll('.card, .stats');
+let targetX = 0, targetY = 0;
+let currentX = 0, currentY = 0;
+
+window.addEventListener('mousemove', (e) => {
+  targetX = (window.innerWidth / 2 - e.clientX) / 32;
+  targetY = (window.innerHeight / 2 - e.clientY) / 32;
+});
+
+function updateCardTilt() {
+  currentX += (targetX - currentX) * 0.08;
+  currentY += (targetY - currentY) * 0.08;
+  cards.forEach(c => {
+    c.style.transform = `rotateY(${-currentX}deg) rotateX(${currentY}deg)`;
+  });
+  requestAnimationFrame(updateCardTilt);
+}
+updateCardTilt();
+
+window.addEventListener('storage', refresh);
+initShell();
+lastCount = Object.keys(entries()).length;
+renderAll();
+setInterval(refresh, 2000);
+</script>
+
+<!-- Cloud sync: auto-push event changes -->
+<script>
+setInterval(function(){
+  if (window.ccsSupabase && ccsSupabase.watchEvents) ccsSupabase.watchEvents();
+}, 4000);
+</script>
+
+<!-- Supabase SDK & Dual-Mode Sync Engine -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a27e4c507e7149e4',t:'MTc4NjE4OTc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

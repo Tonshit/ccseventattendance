@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#030712" />
+<title>CCS About - Colegio de San Francisco Javier</title>
+  
+<style>
+:root{
+  --navy-950:#030712;
+  --navy-900:#070E2E;
+  --navy-800:#0A1440;
+  --navy-700:#101C57;
+  --navy-600:#182460;
+  --navy-500:#232F7A;
+  --navy-400:#3A46A0;
+  
+  /* Cyber Cyan / Electric Azure Palette (Less Yellow) */
+  --cyan-500:#0284C7;
+  --cyan-400:#38BDF8;
+  --cyan-300:#7DD3FC;
+  --cyan-200:#BAE6FD;
+  --cyan-100:#E0F2FE;
+  
+  --green-400:#22C55E;
+  --green-500:#0F7A50;
+  --red-400:#F87171;
+  --red-500:#EF4444;
+
+  --paper:#FFFFFF;
+  --mist:rgba(10, 20, 64, 0.65);
+  --line:rgba(56, 189, 248, 0.2);
+  --ink:#FFFFFF;
+  --ink-soft:rgba(186, 230, 253, 0.75);
+  --shadow:0 30px 60px rgba(0,0,0,0.75);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html{ height:100%; }
+
+body{
+  font-family:var(--font);
+  color:#fff;
+  background:var(--navy-950);
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(3, 7, 18, 0) 70%),
+    radial-gradient(60% 50% at 50% 100%, rgba(16, 28, 87, 0.45) 0%, rgba(3, 7, 18, 0) 80%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  display:flex;
+  justify-content:center;
+  min-height:100dvh;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:calc(env(safe-area-inset-top) + 24px) 16px calc(env(safe-area-inset-bottom) + 98px);
+  position:relative;
+}
+
+/* Binary Matrix Rain Canvas */
+#binary-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.24;
+}
+
+/* Background Cyber Grid with Pulse Animation */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(circle at 50% 35%, #000 25%, transparent 85%);
+  -webkit-mask-image:radial-gradient(circle at 50% 35%, #000 25%, transparent 85%);
+  animation: gridBreathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes gridBreathe {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Ambient Cyber Glow Orbs */
+.cyber-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(65px);
+  opacity: 0.25;
+  animation: floatOrb 12s ease-in-out infinite alternate;
+}
+.cyber-orb-1 {
+  top: 10%;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--cyan-400), transparent 70%);
+}
+.cyber-orb-2 {
+  bottom: 15%;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, var(--cyan-500), transparent 70%);
+  animation-delay: -6s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, 35px) scale(1.15); }
+  100% { transform: translate(-20px, -25px) scale(0.95); }
+}
+
+/* Offline / Online Network Indicator Pill */
+.offline-pill {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 100;
+  font-family: monospace, var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 20px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  background: rgba(7, 14, 46, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: var(--cyan-300);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 10px rgba(56, 189, 248, 0.2);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pillEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pillEntrance {
+  from { opacity:0; transform:translateY(-15px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.offline-pill.is-offline {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: var(--red-400);
+}
+.offline-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green-400);
+  box-shadow: 0 0 8px var(--green-400);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+.offline-pill.is-offline .offline-dot {
+  background: var(--red-400);
+  box-shadow: 0 0 8px var(--red-400);
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+/* Main App Wrapper */
+.app{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:430px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  transform-style:preserve-3d;
+  animation:shrinkContainer 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shrinkContainer {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Staggered Section Entrance Animations */
+@keyframes fadeUpSection {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.app > * { animation: fadeUpSection 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.app > *:nth-child(1){ animation-delay: 0.1s; }
+.app > *:nth-child(2){ animation-delay: 0.25s; }
+.app > *:nth-child(3){ animation-delay: 0.4s; }
+.app > *:nth-child(4){ animation-delay: 0.55s; }
+.app > *:nth-child(5){ animation-delay: 0.7s; }
+
+/* Brand Header */
+.brand{
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:6px;
+}
+
+/* Dual-Orbital Brand Logo */
+.logo-wrapper {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  animation: logoFloat 5s ease-in-out infinite alternate;
+}
+@keyframes logoFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
+
+.logo-ring-outer {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, var(--cyan-400) 40%, var(--cyan-200) 70%, transparent 100%);
+  animation: spinRing 6s linear infinite;
+  opacity: 0.88;
+  filter: drop-shadow(0 0 8px var(--cyan-400));
+}
+
+.logo-ring-inner {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, transparent 0%, rgba(56, 189, 248, 0.9) 50%, transparent 100%);
+  animation: spinRingReverse 3.8s linear infinite;
+  opacity: 0.95;
+}
+
+@keyframes spinRing { 100% { transform: rotate(360deg); } }
+@keyframes spinRingReverse { 100% { transform: rotate(-360deg); } }
+
+.logo-frame{
+  position:relative;
+  z-index:1;
+  width:96px;
+  height:96px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:5px;
+  display:grid;
+  place-items:center;
+  box-shadow:0 0 0 2px rgba(56, 189, 248, 0.45), 0 0 28px rgba(56, 189, 248, 0.35), 0 16px 36px rgba(0,0,0,0.7);
+  overflow:hidden;
+  transition:transform 0.3s ease;
+}
+.logo-frame:hover { transform: scale(1.05); }
+
+.logo-frame img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+  border-radius:50%;
+}
+
+.logo-fallback{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:linear-gradient(150deg, var(--navy-700), var(--navy-900));
+  color:var(--cyan-300);
+  display:grid;
+  place-items:center;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.18em;
+  line-height:1.3;
+  text-align:center;
+}
+
+.brand h1{
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  line-height:1.35;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 70%, var(--cyan-100) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 2px 14px rgba(0,0,0,.45);
+  animation:shineText 8s linear infinite;
+}
+
+@keyframes shineText {
+  to { background-position: 200% center; }
+}
+
+.brand .rule{
+  width:72px;
+  height:2px;
+  margin:10px auto 9px;
+  border-radius:2px;
+  background:linear-gradient(90deg, transparent, var(--cyan-400), transparent);
+  box-shadow:0 0 8px rgba(56, 189, 248, 0.6);
+}
+
+.brand p{
+  font-size:12.5px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  letter-spacing:.06em;
+  font-weight:600;
+}
+
+.brand .ver{
+  display:inline-block;
+  font-size:9.5px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--cyan-300);
+  border:1px solid rgba(56, 189, 248, 0.35);
+  background:rgba(10, 20, 64, 0.6);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-radius:99px;
+  padding:4px 14px;
+  margin-top:12px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), inset 0 0 10px rgba(56, 189, 248, 0.1);
+  transition:all 0.3s ease;
+}
+.brand .ver:hover {
+  border-color:rgba(56, 189, 248, 0.6);
+  box-shadow:0 4px 20px rgba(56, 189, 248, 0.25);
+  transform:translateY(-1px);
+}
+
+.hello{
+  display:none;
+  margin-top:12px;
+  font-size:11px;
+  font-family:monospace, var(--font);
+  font-weight:700;
+  color:var(--cyan-200);
+  background:rgba(7, 14, 46, 0.75);
+  border:1px solid rgba(56, 189, 248, 0.3);
+  padding:5px 14px;
+  border-radius:99px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), 0 0 10px rgba(56, 189, 248, 0.15);
+  animation:helloPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes helloPop {
+  from { opacity:0; transform:scale(0.9) translateY(4px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* Glassmorphic Cyber Cards */
+.card{
+  position:relative;
+  background:rgba(7, 14, 46, 0.68);
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(56, 189, 248, 0.22);
+  border-radius:24px;
+  box-shadow:0 28px 60px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.15);
+  padding:22px 20px 20px;
+  overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.card::after {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:linear-gradient(45deg, transparent 40%, rgba(56, 189, 248, 0.05) 50%, transparent 60%);
+  transform:rotate(25deg);
+  pointer-events:none;
+  animation:cardShine 9s infinite ease-in-out;
+}
+@keyframes cardShine {
+  0% { transform:translateX(-100%) rotate(25deg); }
+  35%, 100% { transform:translateX(100%) rotate(25deg); }
+}
+
+.card:hover{
+  border-color:rgba(56, 189, 248, 0.45);
+  box-shadow:0 34px 70px rgba(0,0,0,0.85), 0 0 30px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--cyan-500), var(--cyan-300) 35%, #ffffff 50%, var(--cyan-300) 65%, var(--cyan-500));
+  background-size:200% 100%;
+  box-shadow:0 0 14px rgba(56, 189, 248, 0.7);
+  animation:stripSweep 6s linear infinite;
+}
+@keyframes stripSweep{
+  from{ background-position:0% 0; }
+  to{ background-position:200% 0; }
+}
+
+.card h2{
+  font-size:12.5px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.card h2::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:linear-gradient(90deg, rgba(56, 189, 248, 0.3), transparent);
+}
+
+/* Feature Rows with Cyber Glass Hover */
+.feat{
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  padding:12px 6px;
+  border-radius:14px;
+  transition:all 0.25s ease;
+}
+.feat + .feat{ border-top:1px solid rgba(56, 189, 248, 0.12); }
+.feat:hover{
+  background:rgba(56, 189, 248, 0.08);
+  padding-left:12px;
+  padding-right:12px;
+  transform:translateX(2px);
+}
+
+.feat .ic{
+  width:40px;
+  height:40px;
+  border-radius:13px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  background:rgba(10, 20, 64, 0.75);
+  border:1px solid rgba(56, 189, 248, 0.25);
+  color:var(--cyan-300);
+  box-shadow:0 4px 14px rgba(0,0,0,0.3), inset 0 0 10px rgba(56, 189, 248, 0.1);
+  transition:transform 0.3s cubic-bezier(.2,.9,.3,1.4), background 0.3s, color 0.3s, border-color 0.3s;
+}
+.feat:nth-child(odd) .ic{
+  background:rgba(2, 132, 199, 0.15);
+  border-color:rgba(56, 189, 248, 0.35);
+  color:var(--cyan-200);
+}
+.feat:hover .ic{
+  transform:scale(1.1) rotate(-4deg);
+  border-color:var(--cyan-400);
+  color:#ffffff;
+  box-shadow:0 0 20px rgba(56, 189, 248, 0.4);
+}
+.feat .ic svg{ width:20px; height:20px; }
+
+.feat b{
+  display:block;
+  font-size:13px;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:.02em;
+}
+.feat span{
+  display:block;
+  font-size:11.5px;
+  color:rgba(186, 230, 253, 0.75);
+  font-weight:500;
+  margin-top:3px;
+  line-height:1.55;
+}
+
+/* Steps with Glowing Numbers */
+.step{
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  padding:12px 6px;
+  border-radius:14px;
+  transition:all 0.25s ease;
+}
+.step + .step{ border-top:1px solid rgba(56, 189, 248, 0.12); }
+.step:hover {
+  background:rgba(56, 189, 248, 0.06);
+  padding-left:12px;
+  padding-right:12px;
+}
+
+.step .num{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg, var(--cyan-400), var(--cyan-500));
+  box-shadow:0 4px 14px rgba(2, 132, 199, 0.45), 0 0 10px rgba(56, 189, 248, 0.3);
+  color:#030712;
+  font-size:11.5px;
+  font-family:monospace, var(--font);
+  font-weight:900;
+  margin-top:1px;
+  transition:transform 0.3s ease, box-shadow 0.3s ease;
+}
+.step:hover .num {
+  transform:scale(1.15) rotate(5deg);
+  box-shadow:0 6px 20px rgba(56, 189, 248, 0.6);
+}
+
+.step p{
+  font-size:12.5px;
+  font-weight:500;
+  color:rgba(255,255,255,0.85);
+  line-height:1.6;
+}
+.step p b{
+  color:var(--cyan-300);
+  font-weight:700;
+}
+
+/* Developer Card — Cyber Sapphire Glass Panel */
+.dev{
+  position:relative;
+  background:radial-gradient(120% 120% at 50% 0%, rgba(16, 28, 87, 0.85) 0%, rgba(7, 14, 46, 0.95) 100%);
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(56, 189, 248, 0.28);
+  border-radius:24px;
+  padding:24px 20px 22px;
+  box-shadow:0 30px 65px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.18);
+  overflow:hidden;
+  text-align:center;
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.dev:hover{
+  border-color:rgba(56, 189, 248, 0.55);
+  box-shadow:0 36px 75px rgba(0,0,0,0.9), 0 0 35px rgba(56, 189, 248, 0.25);
+}
+
+.dev::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:4px;
+  background:linear-gradient(90deg, transparent, var(--cyan-400) 50%, transparent);
+  box-shadow:0 0 12px rgba(56, 189, 248, 0.6);
+}
+
+.dev .badge{
+  display:inline-block;
+  font-size:9px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--cyan-300);
+  background:rgba(10, 20, 64, 0.65);
+  border:1px solid rgba(56, 189, 248, 0.35);
+  border-radius:99px;
+  padding:4px 14px;
+  margin-bottom:16px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4), inset 0 0 10px rgba(56, 189, 248, 0.12);
+}
+
+/* Developer Avatar with Orbital Rings */
+.dev-avatar-wrapper{
+  position:relative;
+  width:84px;
+  height:84px;
+  margin:0 auto 14px;
+  display:grid;
+  place-items:center;
+  animation:avatarFloat 5s ease-in-out infinite alternate;
+}
+
+.dev .ava{
+  position:relative;
+  z-index:2;
+  width:74px;
+  height:74px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:4px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  box-shadow:0 0 0 2px rgba(56, 189, 248, 0.5), 0 0 24px rgba(56, 189, 248, 0.4), 0 12px 28px rgba(0,0,0,0.7);
+  transition:transform 0.3s ease;
+}
+.dev-avatar-wrapper:hover .ava {
+  transform:scale(1.06);
+}
+
+.dev .ava span{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.1em;
+  color:#ffffff;
+  background:linear-gradient(140deg, #38bdf8 0%, #0284c7 65%, #070e2e 100%);
+  position:relative;
+  overflow:hidden;
+}
+.dev .ava span::before {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%);
+  transform:rotate(25deg);
+  animation:avatarShine 4s infinite ease-in-out;
+}
+
+.dev h3{
+  font-size:16.5px;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:.04em;
+  background:linear-gradient(135deg, #ffffff 40%, var(--cyan-200) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.dev .role{
+  font-size:11px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  color:var(--cyan-300);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-top:5px;
+}
+
+.dev p{
+  font-size:11px;
+  color:rgba(255,255,255,0.68);
+  font-weight:500;
+  margin-top:10px;
+  line-height:1.65;
+}
+
+/* Tech Footer */
+.footer{
+  text-align:center;
+  font-size:10px;
+  font-weight:500;
+  color:rgba(255,255,255,0.45);
+  line-height:1.75;
+  margin-top:6px;
+}
+.footer b{
+  color:var(--cyan-300);
+  font-weight:700;
+}
+
+/* Nav — static, fixed at bottom of screen so it's always visible */
+.nav{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:0;
+  z-index:999;
+  width:100%;
+  max-width:430px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  background:rgba(7, 14, 46, 0.94);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(56, 189, 248, 0.25);
+  padding:10px 8px calc(env(safe-area-inset-bottom) + 10px);
+  box-shadow:0 -10px 35px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255,255,255,0.08) inset;
+  pointer-events:auto;
+}
+.nav a{
+  text-decoration:none;
+  color:rgba(255, 255, 255, 0.5);
+  font-size:9.5px;
+  font-weight:800;
+  letter-spacing:.05em;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:5px 0;
+  transition:color .2s;
+}
+.nav a svg{
+  width:20px;
+  height:20px;
+}
+.nav a:hover{
+  color:var(--cyan-300);
+}
+.nav a.active{
+  color:var(--cyan-300);
+  text-shadow:0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+@media (max-height:700px){
+  .logo-wrapper{ width:92px; height:92px; margin-bottom:10px; }
+  .logo-frame{ width:80px; height:80px; }
+  .brand h1{ font-size:16px; }
+  .card{ padding:18px 16px 16px; }
+  .dev{ padding:18px 16px 16px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Ambient Cyber Glow Orbs -->
+<div class="cyber-orb cyber-orb-1"></div>
+<div class="cyber-orb cyber-orb-2"></div>
+
+<!-- Network Connection Indicator -->
+<div class="offline-pill" id="netStatus">
+  <span class="offline-dot" id="netDot"></span>
+  <span id="netText">ONLINE</span>
+</div>
+
+<!-- Binary Matrix Rain Canvas -->
+<canvas id="binary-canvas"></canvas>
+
+<div class="app">
+
+  <!-- Brand Section with Orbital Logo -->
+  <div class="brand">
+    <div class="logo-wrapper">
+      <div class="logo-ring-outer"></div>
+      <div class="logo-ring-inner"></div>
+      <div class="logo-frame">
+        <img id="schoolLogo" src="logo.png" alt="School Logo" />
+        <div class="logo-fallback" id="logoFallback" style="display:none">CCS<br>PORTAL</div>
+      </div>
+    </div>
+    <h1>College of Computer Studies</h1>
+    <div class="rule"></div>
+    <p>&lt;Event Management System /&gt;</p>
+    <span class="ver">Version 4.0.0 &middot; 2026</span>
+    <div class="hello" id="helloLine"></div>
+  </div>
+
+  <!-- Features Card -->
+  <div class="card">
+    <h2>What This System Does</h2>
+
+    <div class="feat">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8V6a2 2 0 0 1 2-2h2M17 4h2a2 2 0 0 1 2 2v2M21 16v2a2 2 0 0 1-2 2h-2M7 20H5a2 2 0 0 1-2-2v-2"/>
+          <rect x="8" y="8" width="8" height="8" rx="1.5"/>
+        </svg>
+      </div>
+      <div>
+        <b>QR Code Check-In</b>
+        <span>Scan the rotating QR on screen — codes change every 60 seconds, so screenshots can't be shared or reused.</span>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3.5 2"/>
+        </svg>
+      </div>
+      <div>
+        <b>Time In &amp; Time Out</b>
+        <span>Scan once when you arrive, scan again when you leave — both times are recorded automatically.</span>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>
+        </svg>
+      </div>
+      <div>
+        <b>Your Attendance Record</b>
+        <span>See every event you joined in the My Record tab — records from the last 7 days.</span>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 3v5h5M9 13h6M9 17h6"/>
+        </svg>
+      </div>
+      <div>
+        <b>Live Reports &amp; PDFs</b>
+        <span>Organizers watch attendance in real time and export present/absent reports instantly.</span>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="ic">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="7" y="2.5" width="10" height="19" rx="2.5"/>
+          <path d="M11 18.5h2"/>
+        </svg>
+      </div>
+      <div>
+        <b>Made For Mobile</b>
+        <span>Designed for phones at the door — simple taps, big buttons, vibrations when it works.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How-To Card -->
+  <div class="card">
+    <h2>How To Use It</h2>
+    <div class="step"><div class="num">1</div><p>Set your <b>School ID and name</b> in the Profile tab (one time only).</p></div>
+    <div class="step"><div class="num">2</div><p>Pick your <b>year level</b> on the Check In tab — it is remembered for next time.</p></div>
+    <div class="step"><div class="num">3</div><p><b>Scan the QR</b> (or type the code) when you arrive — that's your time in.</p></div>
+    <div class="step"><div class="num">4</div><p><b>Scan again when leaving</b> — that's your time out. Done!</p></div>
+  </div>
+
+  <!-- Developer Card -->
+  <div class="dev">
+    <span class="badge">Developed By</span>
+    <div class="dev-avatar-wrapper">
+      <div class="avatar-ring-outer"></div>
+      <div class="avatar-ring-inner"></div>
+      <div class="ava"><span>VZ</span></div>
+    </div>
+    <h3>Vincent Blez T. Zerna</h3>
+    <div class="role">Developer of the System</div>
+    <p>Designed and built for the students and organizations<br>of the College of Computer Studies.</p>
+  </div>
+
+  <!-- Tech Footer -->
+  <div class="footer">
+    <b>CCS Event Management System</b> &middot; College of Computer Studies<br>
+    No sign-in sheets. No fake codes. Just attendance that works.
+  </div>
+
+</div>
+
+<!-- Bottom Navigation Bar -->
+<nav class="nav">
+  <a href="student-checkin.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5 5L20 6.5"/></svg>
+    <span>Check In</span>
+  </a>
+  <a href="student-events.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    <span>Events</span>
+  </a>
+  <a href="student-record.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+    <span>My Record</span>
+  </a>
+  <a href="student-about.html" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+    <span>About</span>
+  </a>
+  <a href="student-profile.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.9-3.6 3.6-5.5 7-5.5s6.1 1.9 7 5.5"/></svg>
+    <span>Profile</span>
+  </a>
+</nav>
+
+<script>
+(function(){
+  // --- Network Connection Monitor ---
+  const netStatus = document.getElementById('netStatus');
+  const netText = document.getElementById('netText');
+  
+  function updateOnlineStatus() {
+    if (!netStatus || !netText) return;
+    if (navigator.onLine) {
+      netStatus.classList.remove('is-offline');
+      netText.textContent = "ONLINE";
+    } else {
+      netStatus.classList.add('is-offline');
+      netText.textContent = "OFFLINE MODE";
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // --- Live Binary Rain Matrix Canvas (Cyan & Ice-White Palette) ---
+  const canvas = document.getElementById('binary-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let width, height, columns, drops;
+    const fontSize = 14;
+    const chars = ['0', '1'];
+
+    function initBinaryCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      columns = Math.floor(width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.floor(Math.random() * -50));
+    }
+
+    function drawBinaryRain() {
+      ctx.fillStyle = 'rgba(3, 7, 18, 0.16)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        if (i % 8 === 0) {
+          ctx.fillStyle = '#ffffff'; // Bright ice-white glint
+        } else if (i % 3 === 0) {
+          ctx.fillStyle = '#7dd3fc'; // Electric cyan light
+        } else {
+          ctx.fillStyle = '#38bdf8'; // Primary cyber cyan
+        }
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    function animateBinary() {
+      drawBinaryRain();
+      setTimeout(() => {
+        requestAnimationFrame(animateBinary);
+      }, 45);
+    }
+
+    window.addEventListener('resize', initBinaryCanvas);
+    initBinaryCanvas();
+    animateBinary();
+  }
+
+  // --- Smooth 3D Card Interactive Tilt with Physics ---
+  const cards = document.querySelectorAll('.card, .dev');
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+
+  window.addEventListener('mousemove', (e) => {
+    targetX = (window.innerWidth / 2 - e.clientX) / 32;
+    targetY = (window.innerHeight / 2 - e.clientY) / 32;
+  });
+
+  function updateCardTilt() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    cards.forEach(c => {
+      c.style.transform = `rotateY(${-currentX}deg) rotateX(${currentY}deg)`;
+    });
+    requestAnimationFrame(updateCardTilt);
+  }
+  updateCardTilt();
+
+  // --- Logo Fallback Handling ---
+  const img = document.getElementById('schoolLogo');
+  const fall = document.getElementById('logoFallback');
+  if (img && fall) {
+    img.onload = () => { img.style.display = 'block'; fall.style.display = 'none'; };
+    img.onerror = () => { img.style.display = 'none'; fall.style.display = 'grid'; };
+  }
+
+  // --- Personalize Functionality (Identity Detection) ---
+  function $(id){ return document.getElementById(id); }
+  function read(k, fb){
+    try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; }
+    catch(e){ return fb; }
+  }
+
+  function personalize(){
+    try {
+      var id = null;
+      try { id = localStorage.getItem('ccs_session'); } catch(e){}
+      if (!id){
+        var raw = localStorage.getItem('ccs_ev_me');
+        if (raw) id = 'COL-' + raw;
+      }
+      var el = $('helloLine');
+      if (id && el){
+        var students = read('ccs_students', {});
+        var names = read('ccs_ev_names', {});
+        var nm = (students[id] && students[id].name) || names[id] || id;
+        el.textContent = 'Signed in as ' + nm + ' (' + id + ')';
+        el.style.display = 'inline-block';
+      }
+    } catch(e){}
+  }
+
+  personalize();
+
+  // Cloud sync listeners
+  window.addEventListener('storage', personalize);
+  window.addEventListener('ccs-synced', personalize);
+
+  // Embedded Service Worker for Web Caching (Offline Support)
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    const swCode = `
+      const CACHE_NAME = 'ccs-portal-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+      });
+    `;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
+})();
+</script>
+
+<!-- Supabase SDK & Dual-Mode Sync Engine -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+
+</body>
+</html>

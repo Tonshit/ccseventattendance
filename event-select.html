@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#030712" />
+<title>CCS Select Event - Organizer Portal</title>
+  
+<style>
+:root{
+  --navy-950:#030712;
+  --navy-900:#070E2E;
+  --navy-800:#0A1440;
+  --navy-700:#101C57;
+  --navy-600:#182460;
+  --navy-500:#232F7A;
+  --navy-400:#3A46A0;
+  
+  /* Cyber Cyan / Electric Azure Palette (Less Yellow) */
+  --cyan-500:#0284C7;
+  --cyan-400:#38BDF8;
+  --cyan-300:#7DD3FC;
+  --cyan-200:#BAE6FD;
+  --cyan-100:#E0F2FE;
+  
+  --green:#22C55E;
+  --green-500:#0F7A50;
+  --green-100:rgba(34, 197, 94, 0.15);
+  --red:#F87171;
+  --red-100:rgba(239, 68, 68, 0.15);
+  --amber:#FDE047;
+  --amber-100:rgba(253, 224, 71, 0.15);
+  
+  --paper:#FFFFFF;
+  --mist:rgba(10, 20, 64, 0.65);
+  --line:rgba(56, 189, 248, 0.2);
+  --ink:#FFFFFF;
+  --ink-soft:rgba(186, 230, 253, 0.75);
+  --shadow:0 30px 60px rgba(0,0,0,0.75);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ min-height:100%; }
+
+body{
+  font-family:var(--font);
+  color:#fff;
+  background:var(--navy-950);
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(3, 7, 18, 0) 70%),
+    radial-gradient(60% 50% at 50% 100%, rgba(16, 28, 87, 0.45) 0%, rgba(3, 7, 18, 0) 80%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  min-height:100dvh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* Binary Matrix Canvas Background */
+#binary-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+/* Background Cyber Grid with Pulse Animation */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(circle at 50% 35%, #000 25%, transparent 85%);
+  -webkit-mask-image:radial-gradient(circle at 50% 35%, #000 25%, transparent 85%);
+  animation: gridBreathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes gridBreathe {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Ambient Cyber Glow Orbs */
+.cyber-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(65px);
+  opacity: 0.25;
+  animation: floatOrb 12s ease-in-out infinite alternate;
+}
+.cyber-orb-1 {
+  top: 10%;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--cyan-400), transparent 70%);
+}
+.cyber-orb-2 {
+  bottom: 15%;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, var(--cyan-500), transparent 70%);
+  animation-delay: -6s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, 35px) scale(1.15); }
+  100% { transform: translate(-20px, -25px) scale(0.95); }
+}
+
+/* Organizer Gate Modal Overlay */
+.gate{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:grid;
+  place-items:center;
+  padding:22px;
+  background:rgba(3, 7, 18, 0.96);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+}
+.gate.hide{ display:none; }
+
+.gate-box{
+  width:100%;
+  max-width:340px;
+  text-align:center;
+  background:rgba(7, 14, 46, 0.88);
+  border:1px solid rgba(56, 189, 248, 0.3);
+  border-radius:24px;
+  padding:28px 22px 24px;
+  box-shadow:0 30px 60px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.15);
+  animation:pop .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.gate-logo-wrapper {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+}
+
+.gate-box img{
+  width:82px;
+  height:82px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:4px;
+  object-fit:contain;
+  border:1.5px solid var(--cyan-400);
+  box-shadow:0 0 20px rgba(56, 189, 248, 0.4);
+}
+
+.gate-box h1{
+  font-size:16px;
+  font-weight:800;
+  color:#fff;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  margin:10px 0 4px;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.gate-box p{
+  font-size:11.5px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:600;
+  margin-bottom:18px;
+}
+
+.gate-box input{
+  width:100%;
+  border:1.5px solid rgba(56, 189, 248, 0.3);
+  background:rgba(10, 20, 64, 0.85);
+  color:#fff;
+  font-family:monospace, var(--font);
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:.35em;
+  text-align:center;
+  padding:15px;
+  border-radius:14px;
+  outline:0;
+  transition:all 0.25s ease;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.gate-box input:focus{
+  border-color:var(--cyan-400);
+  box-shadow:0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 20px rgba(56, 189, 248, 0.35), inset 0 2px 6px rgba(0,0,0,0.45);
+}
+
+.gate-err{
+  display:none;
+  font-size:11.5px;
+  color:var(--red);
+  font-weight:700;
+  margin-top:10px;
+  animation:shakeErr 0.3s ease;
+}
+@keyframes shakeErr {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.gate-err.show{ display:block; }
+.gate-hint{ font-size:10.5px; color:rgba(186, 230, 253, 0.5); margin-top:14px; font-family:monospace; }
+
+/* Sticky Top Bar */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:25;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  background:rgba(7, 14, 46, 0.85);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid rgba(56, 189, 248, 0.22);
+  box-shadow:0 4px 30px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.08) inset;
+}
+.topbar .logo{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:2px;
+  flex-shrink:0;
+  object-fit:contain;
+  border:1.5px solid var(--cyan-400);
+  box-shadow:0 0 16px rgba(56, 189, 248, 0.45);
+  transition:transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.topbar .logo:hover{
+  transform:scale(1.08) rotate(5deg);
+  box-shadow:0 0 24px rgba(56, 189, 248, 0.7);
+}
+.topbar .who{ flex:1; min-width:0; }
+.topbar .who h1{
+  font-size:15.5px;
+  font-weight:800;
+  letter-spacing:.03em;
+  background:linear-gradient(135deg, #ffffff 25%, var(--cyan-300) 70%, var(--cyan-100) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shineText 8s linear infinite;
+}
+.topbar .who p{
+  font-size:11px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:700;
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.06em;
+  opacity:0.9;
+}
+
+@keyframes shineText {
+  to { background-position: 200% center; }
+}
+
+.icon-btn{
+  width:38px;
+  height:38px;
+  flex-shrink:0;
+  border:1px solid rgba(56, 189, 248, 0.3);
+  background:rgba(10, 20, 64, 0.75);
+  border-radius:12px;
+  color:var(--cyan-300);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition:all 0.25s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,0.3);
+}
+.icon-btn:hover {
+  background:rgba(56, 189, 248, 0.18);
+  border-color:var(--cyan-400);
+  color:#ffffff;
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(56, 189, 248, 0.3);
+}
+.icon-btn svg{ width:18px; height:18px; }
+
+/* Main Container */
+.wrap{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:440px;
+  margin:0 auto;
+  padding:16px 15px calc(env(safe-area-inset-bottom) + 98px);
+  animation:shrinkContainer 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shrinkContainer {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Glassmorphism Interactive Cards */
+.card{
+  position:relative;
+  background:rgba(7, 14, 46, 0.68);
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(56, 189, 248, 0.22);
+  border-radius:24px;
+  box-shadow:0 28px 60px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.15);
+  padding:22px 18px;
+  margin-top:14px;
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.card:hover{
+  border-color:rgba(56, 189, 248, 0.45);
+  box-shadow:0 34px 70px rgba(0,0,0,0.85), 0 0 30px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.card::before{
+  content:"";
+  position:absolute;
+  top:0; left:0; right:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--cyan-500), var(--cyan-300) 35%, #ffffff 50%, var(--cyan-300) 65%, var(--cyan-500));
+  background-size:200% 100%;
+  box-shadow:0 0 14px rgba(56, 189, 248, 0.7);
+  animation:stripSweep 6s linear infinite;
+  border-top-left-radius:24px;
+  border-top-right-radius:24px;
+}
+@keyframes stripSweep{
+  from{ background-position:0% 0; }
+  to{ background-position:200% 0; }
+}
+
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(56, 189, 248, 0.16);
+}
+.card-head h2{
+  font-size:13px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.card-head .sub{
+  font-size:11px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:600;
+}
+.count-pill{
+  font-size:11px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  color:#030712;
+  background:linear-gradient(135deg, var(--cyan-300), var(--cyan-400));
+  border-radius:99px;
+  padding:3px 11px;
+  letter-spacing:.04em;
+  box-shadow:0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+/* =========================================================================
+   HIGH-TECH CUSTOM DESIGNED CYBER DROPDOWNS
+   ========================================================================= */
+.cyber-dropdown{
+  position:relative;
+  width:100%;
+  margin-bottom:12px;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.cyber-dropdown-trigger{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:rgba(10, 20, 64, 0.78);
+  border:1.5px solid rgba(56, 189, 248, 0.3);
+  border-radius:16px;
+  padding:12px 14px;
+  cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.25);
+  outline:none;
+}
+.cyber-dropdown-trigger:hover{
+  border-color:rgba(56, 189, 248, 0.6);
+  background:rgba(16, 28, 87, 0.9);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45), 0 6px 20px rgba(56, 189, 248, 0.2);
+}
+.cyber-dropdown.open .cyber-dropdown-trigger,
+.cyber-dropdown-trigger:focus-visible{
+  border-color:var(--cyan-400);
+  background:rgba(10, 20, 64, 0.96);
+  box-shadow:0 0 0 3px rgba(56, 189, 248, 0.25), 0 0 20px rgba(56, 189, 248, 0.35), inset 0 2px 6px rgba(0,0,0,0.45);
+}
+
+.trigger-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:1;
+  min-width:0;
+}
+.trigger-left .f-icon{
+  padding:0;
+  display:grid;
+  place-items:center;
+  color:var(--cyan-400);
+  flex-shrink:0;
+}
+.trigger-left .f-icon svg{
+  width:18px;
+  height:18px;
+  filter:drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));
+}
+.trigger-info{
+  flex:1;
+  min-width:0;
+}
+.trigger-title{
+  font-size:13.5px;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:0.02em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.3;
+}
+.trigger-sub{
+  font-size:10.5px;
+  font-family:monospace, var(--font);
+  font-weight:600;
+  color:rgba(186, 230, 253, 0.75);
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.trigger-right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.trigger-badge{
+  font-size:9.5px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  padding:2px 8px;
+  border-radius:6px;
+  background:rgba(56, 189, 248, 0.16);
+  color:var(--cyan-300);
+  border:1px solid rgba(56, 189, 248, 0.3);
+}
+.trigger-badge.danger{
+  background:rgba(239, 68, 68, 0.16);
+  color:var(--red);
+  border-color:rgba(239, 68, 68, 0.35);
+}
+.trigger-arrow{
+  display:grid;
+  place-items:center;
+  color:var(--cyan-400);
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s ease;
+}
+.trigger-arrow svg{
+  width:16px;
+  height:16px;
+}
+.cyber-dropdown.open .trigger-arrow{
+  transform:rotate(180deg);
+  color:var(--cyan-300);
+}
+
+.type-dot-preview{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  flex-shrink:0;
+  box-shadow:0 0 10px currentColor;
+}
+
+/* Floating Custom Options Menu */
+.cyber-dropdown-menu{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  right:0;
+  z-index:75;
+  background:rgba(7, 14, 46, 0.96);
+  backdrop-filter:blur(28px);
+  -webkit-backdrop-filter:blur(28px);
+  border:1.5px solid var(--cyan-400);
+  border-radius:18px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.9), 0 0 30px rgba(56, 189, 248, 0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+  padding:8px;
+  max-height:280px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-8px) scale(0.97);
+  transition:all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cyber-dropdown.open .cyber-dropdown-menu{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0) scale(1);
+}
+
+/* Custom Scrollbar for Dropdown Menu */
+.cyber-dropdown-menu::-webkit-scrollbar{
+  width:6px;
+}
+.cyber-dropdown-menu::-webkit-scrollbar-track{
+  background:rgba(10, 20, 64, 0.5);
+  border-radius:10px;
+}
+.cyber-dropdown-menu::-webkit-scrollbar-thumb{
+  background:rgba(56, 189, 248, 0.4);
+  border-radius:10px;
+}
+.cyber-dropdown-menu::-webkit-scrollbar-thumb:hover{
+  background:var(--cyan-400);
+}
+
+/* Custom Dropdown Option Items */
+.cyber-dropdown-option{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border:1px solid transparent;
+  margin-bottom:4px;
+}
+.cyber-dropdown-option:last-child{
+  margin-bottom:0;
+}
+.cyber-dropdown-option:hover{
+  background:rgba(56, 189, 248, 0.14);
+  border-color:rgba(56, 189, 248, 0.3);
+  transform:translateX(2px);
+}
+.cyber-dropdown-option.selected{
+  background:rgba(10, 20, 64, 0.95);
+  border-color:var(--cyan-400);
+  box-shadow:0 0 14px rgba(56, 189, 248, 0.25);
+}
+.option-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:1;
+  min-width:0;
+}
+.option-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  flex-shrink:0;
+  box-shadow:0 0 6px currentColor;
+}
+.option-info{
+  flex:1;
+  min-width:0;
+}
+.option-title{
+  font-size:12.5px;
+  font-weight:700;
+  color:#ffffff;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:block;
+  line-height:1.3;
+}
+.option-sub{
+  font-size:10px;
+  font-family:monospace, var(--font);
+  color:rgba(186, 230, 253, 0.7);
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.option-check{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  opacity:0;
+  transform:scale(0.5);
+  transition:all 0.2s ease;
+  background:var(--cyan-400);
+  color:#030712;
+}
+.option-check svg{
+  width:11px;
+  height:11px;
+}
+.cyber-dropdown-option.selected .option-check{
+  opacity:1;
+  transform:scale(1);
+}
+
+/* =========================================================================
+   FORM CONTROLS, ANTI-OVERLAP TIME ROW & INPUTS
+   ========================================================================= */
+.f-label{
+  display:block;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  color:var(--cyan-300);
+  margin-bottom:8px;
+  font-family:monospace, var(--font);
+}
+.f{ margin-bottom:15px; position:relative; }
+
+/* Dedicated Anti-Overlap Time Grid */
+.time-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:10px;
+  width:100%;
+}
+@media (max-width: 340px){
+  .time-row{ grid-template-columns:1fr; }
+}
+
+/* Cyber Field Input Container (.form-ctl) */
+.form-ctl{
+  position:relative;
+  display:flex;
+  align-items:center;
+  background:rgba(10, 20, 64, 0.75);
+  border:1.5px solid rgba(56, 189, 248, 0.3);
+  border-radius:14px;
+  transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45), 0 4px 14px rgba(0,0,0,0.25);
+  overflow:hidden;
+  width:100%;
+}
+.form-ctl:hover{
+  border-color:rgba(56, 189, 248, 0.6);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45), 0 6px 22px rgba(56, 189, 248, 0.2);
+}
+.form-ctl:focus-within{
+  border-color:var(--cyan-400);
+  background:rgba(10, 20, 64, 0.95);
+  box-shadow:0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 20px rgba(56, 189, 248, 0.35), inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.form-ctl .f-icon{
+  display:grid;
+  place-items:center;
+  padding-left:14px;
+  padding-right:4px;
+  color:var(--cyan-400);
+  flex-shrink:0;
+  pointer-events:none;
+}
+.form-ctl .f-icon svg{
+  width:18px;
+  height:18px;
+  filter:drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));
+}
+
+.form-ctl input{
+  flex:1;
+  min-width:0;
+  width:100%;
+  border:none;
+  background:transparent;
+  color:#ffffff;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  padding:14px 14px 14px 8px;
+  outline:none;
+  box-shadow:none;
+}
+.form-ctl input::placeholder{
+  color:rgba(125, 211, 252, 0.38);
+  font-weight:500;
+}
+
+/* Compact Form Control for Time Inputs on Mobile */
+.form-ctl.compact{
+  padding:0;
+}
+.form-ctl.compact .f-icon{
+  padding-left:10px;
+  padding-right:2px;
+}
+.form-ctl.compact .f-icon svg{
+  width:15px;
+  height:15px;
+}
+.form-ctl.compact input[type="time"]{
+  padding:12px 8px 12px 4px;
+  font-size:13px;
+  min-width:0;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* Custom styling for native date and time controls */
+input[type="date"], input[type="time"]{
+  color-scheme:dark;
+  font-family:monospace, var(--font);
+  font-weight:700;
+  letter-spacing:0.02em;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator{
+  filter:invert(0.8) sepia(1) saturate(5) hue-rotate(170deg);
+  cursor:pointer;
+  opacity:0.85;
+  transition:opacity 0.2s ease;
+  padding-right:4px;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover{
+  opacity:1;
+}
+
+/* Grace Period Banner (Prevents Mobile Overlap) */
+.grace-banner{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:rgba(56, 189, 248, 0.08);
+  border:1px solid rgba(56, 189, 248, 0.22);
+  border-radius:12px;
+  padding:9px 12px;
+  margin-bottom:15px;
+  font-size:11px;
+  color:rgba(186, 230, 253, 0.85);
+  font-family:monospace, var(--font);
+  line-height:1.4;
+}
+.grace-banner svg{
+  width:14px;
+  height:14px;
+  color:var(--cyan-400);
+  flex-shrink:0;
+}
+
+/* Active Event Banner Box */
+.ev{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid rgba(56, 189, 248, 0.12);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.ev:last-child{ border-bottom:0; }
+.ev.sel{
+  background:rgba(56, 189, 248, 0.14);
+  border:1px solid rgba(56, 189, 248, 0.35);
+  border-radius:16px;
+  padding:14px 14px;
+  cursor:default;
+  box-shadow:0 4px 18px rgba(0,0,0,0.3);
+}
+.ev-b{ flex:1; min-width:0; }
+.ev-b .nm{
+  font-size:14.5px;
+  font-weight:800;
+  color:#ffffff;
+  margin:6px 0 4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.02em;
+}
+.ev-b .mt{
+  font-size:11px;
+  color:rgba(186, 230, 253, 0.75);
+  font-family:monospace, var(--font);
+  font-weight:600;
+  line-height:1.5;
+}
+.ev-r{ text-align:right; flex-shrink:0; }
+.ev-r b{
+  display:block;
+  font-size:20px;
+  font-family:monospace, var(--font);
+  font-weight:900;
+  color:var(--cyan-300);
+  line-height:1.1;
+}
+.ev-r span{
+  font-size:9px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(186, 230, 253, 0.7);
+}
+
+.dotst{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:6px; box-shadow:0 0 6px currentColor; }
+.dotst.open{ background:#22C55E; color:#22C55E; }
+.dotst.shut{ background:#F87171; color:#F87171; }
+
+.badge-active{
+  display:inline-block;
+  font-size:9px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#030712;
+  background:linear-gradient(135deg, var(--cyan-300), var(--cyan-400));
+  border-radius:6px;
+  padding:3px 8px;
+  margin-top:6px;
+  box-shadow:0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* History List */
+.hist-note{
+  font-size:11px;
+  color:rgba(186, 230, 253, 0.7);
+  font-family:monospace, var(--font);
+  font-weight:600;
+  margin:-4px 0 12px;
+  line-height:1.55;
+}
+.set-note{
+  font-size:11px;
+  color:rgba(186, 230, 253, 0.7);
+  font-family:monospace, var(--font);
+  font-weight:600;
+  margin-top:10px;
+  line-height:1.55;
+  text-align:center;
+}
+.hrow{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 6px;
+  border-bottom:1px solid rgba(56, 189, 248, 0.12);
+  border-radius:10px;
+  transition:all 0.2s ease;
+}
+.hrow:hover { background:rgba(56, 189, 248, 0.06); padding-left:10px; padding-right:10px; }
+.hrow:last-child{ border-bottom:0; }
+.hst{
+  display:inline-block;
+  font-size:9px;
+  font-family:monospace, var(--font);
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:6px;
+  margin-top:5px;
+}
+.hst.exp{ background:rgba(34, 197, 94, 0.2); color:var(--green); border:1px solid rgba(34, 197, 94, 0.4); }
+.hst.pend{ background:rgba(56, 189, 248, 0.18); color:var(--cyan-300); border:1px solid rgba(56, 189, 248, 0.35); }
+
+.btn-mini{
+  width:auto;
+  flex-shrink:0;
+  border:1px solid rgba(56, 189, 248, 0.35);
+  background:rgba(10, 20, 64, 0.85);
+  color:var(--cyan-300);
+  font-family:inherit;
+  font-size:10.5px;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.btn-mini:hover {
+  background:rgba(56, 189, 248, 0.25);
+  border-color:var(--cyan-400);
+  color:#ffffff;
+  transform:translateY(-1px);
+}
+.btn-mini:active{ opacity:.7; }
+
+/* Interactive Cursor-Tracking Glow Buttons */
+.btn{
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position:relative;
+  width:100%;
+  border-radius:14px;
+  padding:14px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  overflow:hidden;
+  text-decoration:none;
+  border:none;
+  outline:none;
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.btn::before {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  opacity:0;
+  transform:scale(0.6);
+  transition:opacity 0.3s ease, transform 0.3s ease;
+  pointer-events:none;
+}
+.btn:hover::before {
+  opacity:1;
+  transform:scale(1);
+}
+.btn:hover{
+  transform:translateY(-2px);
+}
+.btn:active{
+  transform:translateY(1px) scale(0.98);
+}
+
+.btn.navy{
+  background:linear-gradient(135deg, var(--cyan-400) 0%, var(--cyan-500) 100%);
+  color:#030712;
+  box-shadow:0 8px 24px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.btn.navy:hover{
+  box-shadow:0 12px 30px rgba(56, 189, 248, 0.6), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.btn.line{
+  background:rgba(10, 20, 64, 0.7);
+  border:1.5px solid rgba(56, 189, 248, 0.35);
+  color:var(--cyan-300);
+  box-shadow:0 4px 16px rgba(0,0,0,0.35);
+  margin-top:10px;
+}
+.btn.line:hover{
+  background:rgba(56, 189, 248, 0.2);
+  border-color:var(--cyan-400);
+  color:#fff;
+  box-shadow:0 8px 22px rgba(56, 189, 248, 0.3);
+}
+
+.btn.danger{
+  background:rgba(239, 68, 68, 0.12);
+  border:1.5px solid rgba(239, 68, 68, 0.4);
+  color:var(--red);
+  box-shadow:0 4px 16px rgba(239, 68, 68, 0.2);
+  margin-top:10px;
+}
+.btn.danger:hover{
+  background:rgba(239, 68, 68, 0.25);
+  border-color:var(--red);
+  color:#fff;
+  box-shadow:0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+.btn.danger-solid{
+  background:linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  color:#fff;
+  box-shadow:0 8px 24px rgba(239, 68, 68, 0.45);
+}
+
+.btn svg{ width:16px; height:16px; }
+
+/* Dynamic Expand/Collapse Form */
+.new-form{
+  max-height:0;
+  opacity:0;
+  overflow:hidden;
+  transition:max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, margin-top 0.35s ease;
+  margin-top:0;
+}
+.new-form.show{
+  max-height:1600px;
+  opacity:1;
+  margin-top:16px;
+  overflow:visible;
+}
+
+/* Category Badge */
+.ty{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  font-weight:800;
+  font-family:monospace, var(--font);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:6px;
+  border:1px solid;
+}
+.ty i{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  display:inline-block;
+  box-shadow:0 0 6px currentColor;
+}
+
+.empty{
+  text-align:center;
+  padding:24px 14px;
+  color:rgba(186, 230, 253, 0.7);
+  font-size:12.5px;
+  font-family:monospace, var(--font);
+  line-height:1.6;
+  background:rgba(10, 20, 64, 0.5);
+  border-radius:14px;
+  border:1px dashed rgba(56, 189, 248, 0.25);
+}
+
+/* Toast Message */
+.toast{
+  position:fixed;
+  bottom:calc(env(safe-area-inset-bottom) + 80px);
+  left:50%;
+  transform:translateX(-50%) translateY(20px);
+  z-index:90;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(7, 14, 46, 0.95);
+  border:1px solid var(--cyan-400);
+  box-shadow:0 14px 40px rgba(0,0,0,0.85), 0 0 20px rgba(56, 189, 248, 0.4);
+  color:#fff;
+  padding:12px 20px;
+  border-radius:99px;
+  font-size:12px;
+  font-weight:700;
+  opacity:0;
+  pointer-events:none;
+  transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  white-space:nowrap;
+}
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+.toast svg{ width:16px; height:16px; color:var(--cyan-300); }
+.toast.bad{ border-color:var(--red); box-shadow:0 0 20px rgba(248, 113, 113, 0.4); }
+.toast.bad svg{ color:var(--red); }
+
+/* Confirmation Modal */
+.confirm{
+  position:fixed;
+  inset:0;
+  z-index:85;
+  display:none;
+  place-items:center;
+  padding:20px;
+  background:rgba(3, 7, 18, 0.9);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.confirm.show{ display:grid; }
+.confirm-box{
+  width:100%;
+  max-width:340px;
+  background:rgba(7, 14, 46, 0.95);
+  border:1.5px solid var(--red);
+  box-shadow:0 30px 60px rgba(0,0,0,0.9), 0 0 30px rgba(248, 113, 113, 0.35);
+  border-radius:24px;
+  padding:24px 20px 20px;
+  text-align:center;
+  animation:pop .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.confirm-ic{
+  width:50px;
+  height:50px;
+  margin:0 auto 14px;
+  border-radius:50%;
+  background:rgba(239, 68, 68, 0.18);
+  border:1.5px solid var(--red);
+  color:var(--red);
+  display:grid;
+  place-items:center;
+  box-shadow:0 0 16px rgba(248, 113, 113, 0.4);
+}
+.confirm-ic svg{ width:24px; height:24px; }
+.confirm-box h3{
+  font-size:15px;
+  font-weight:800;
+  color:#fff;
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.confirm-box p{
+  font-size:12px;
+  color:rgba(186, 230, 253, 0.85);
+  margin-bottom:18px;
+  line-height:1.5;
+}
+.confirm-btns{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* Stationary Fixed Bottom Navigation Bar */
+.nav{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:999;
+  width:100%;
+  max-width:440px;
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  gap:2px;
+  padding:10px 8px calc(env(safe-area-inset-bottom) + 10px);
+  background:rgba(7, 14, 46, 0.88);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border-top:1px solid rgba(56, 189, 248, 0.25);
+  box-shadow:0 -10px 30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.nav a{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  color:rgba(186, 230, 253, 0.55);
+  text-decoration:none;
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  padding:6px 2px;
+  border-radius:12px;
+  transition:color 0.2s ease, background 0.2s ease;
+}
+.nav a:hover{
+  color:var(--cyan-300);
+  background:rgba(56, 189, 248, 0.08);
+}
+.nav a.active{
+  color:var(--cyan-400);
+  background:rgba(56, 189, 248, 0.15);
+  box-shadow:inset 0 0 12px rgba(56, 189, 248, 0.25);
+}
+.nav svg{ width:20px; height:20px; }
+nav a:hover svg, nav a.active svg{ transform:none; }
+
+/* =========================================================================
+   MOBILE SMOOTHNESS PATCH (phones & tablets only - desktop is unchanged)
+   The scroll lag came from full-screen blur layers re-rendering over the
+   animated matrix canvas every frame while scrolling. These overrides keep
+   the exact same design but make scrolling hit 60fps on mobile GPUs, and
+   remove the tap delay when selecting an event type.
+   ========================================================================= */
+html, body{ touch-action:manipulation; }
+
+@media (hover: none){
+  body{ background-attachment:scroll; }
+  body::before{ animation:none; }
+  .cyber-orb{ animation:none; }
+  /* Lighter glass blur on mobile chips - same glass look, much cheaper */
+  .topbar{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .card{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .cyber-dropdown-menu{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .nav{ backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+  .gate, .confirm{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .toast{ backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:0.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<canvas id="binary-canvas"></canvas>
+<div class="cyber-orb cyber-orb-1"></div>
+<div class="cyber-orb cyber-orb-2"></div>
+
+<!-- Gate Modal to protect Organizer pages -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-logo-wrapper">
+      <img id="gateLogo" src="logo.png" alt="CCS Logo" />
+    </div>
+    <h1>Organizer Access</h1>
+    <p>CCS Student Council Portal</p>
+    <input type="password" id="gatePin" inputmode="numeric" placeholder="PASSCODE" maxlength="12" autocomplete="off" />
+    <div class="gate-err" id="gateErr">&#9888; Incorrect Passcode</div>
+    <button class="btn navy glow-btn" id="gateBtn" style="margin-top:14px"><span>Unlock</span></button>
+    <div class="gate-hint" id="gateHint"></div>
+  </div>
+</div>
+
+<header class="topbar">
+  <img class="logo" id="brandLogo" src="logo.png" alt="CCS Logo" />
+  <div class="who">
+    <h1>Select Event</h1>
+    <p id="shellSub">Organizer</p>
+  </div>
+  <button class="icon-btn" id="lock" aria-label="Lock">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+    </svg>
+  </button>
+</header>
+
+<div class="wrap">
+
+  <!-- Interactive Select Event Card with Custom Designed Dropdown -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Select Event</h2>
+      <span class="count-pill" id="pickCount">0</span>
+    </div>
+    
+    <!-- Custom Cyber Event Dropdown Selector -->
+    <div class="f" style="margin-bottom:12px;">
+      <label class="f-label">Active Event Selector</label>
+      <div class="cyber-dropdown" id="evtDropdown">
+        <div class="cyber-dropdown-trigger" id="evtTrigger" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
+          <div class="trigger-left">
+            <span class="f-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+              </svg>
+            </span>
+            <div class="trigger-info">
+              <div class="trigger-title" id="evtTriggerTitle">Select an event</div>
+              <div class="trigger-sub" id="evtTriggerSub">Choose from active events</div>
+            </div>
+          </div>
+          <div class="trigger-right">
+            <span class="trigger-badge" id="evtTriggerBadge">Active</span>
+            <span class="trigger-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        
+        <div class="cyber-dropdown-menu" id="evtMenu" role="listbox"></div>
+      </div>
+      <!-- Hidden native select synchronized for compatibility -->
+      <select id="evtPick" style="display:none"></select>
+    </div>
+    
+    <div id="activeBox" style="margin-top:10px"></div>
+
+    <a class="btn navy glow-btn" href="event-admin.html" style="margin-top:14px">
+      <span>Show Attendance Code</span>
+    </a>
+    <button class="btn line glow-btn" id="editEvt">
+      <span>Edit Selected Event</span>
+    </button>
+    <button class="btn line glow-btn" id="endNow" style="color:var(--red)">
+      <span>End Selected Event Now</span>
+    </button>
+  </div>
+
+  <!-- Create & Edit Event Fill-Up Form with Custom Dropdown & Anti-Overlap Mobile Layout -->
+  <div class="card">
+    <div class="card-head">
+      <h2 id="formTitle">Create New Event</h2>
+      <button class="btn line glow-btn" id="toggleNew" style="width:auto;padding:7px 14px;font-size:10.5px;margin-top:0;">
+        <span>Open Form</span>
+      </button>
+    </div>
+    
+    <div class="new-form" id="newForm">
+      <!-- 1. Event Name -->
+      <div class="f">
+        <label class="f-label" for="nName">Event Name</label>
+        <div class="form-ctl">
+          <span class="f-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7M14 14.66V17c0 .55.45 1 1 1h2M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+          </span>
+          <input type="text" id="nName" placeholder="e.g. CCS General Assembly" maxlength="80" autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- 2. Custom Designed Cyber Event Type Dropdown -->
+      <div class="f">
+        <label class="f-label" for="nType">Event Type</label>
+        <div class="cyber-dropdown" id="typeDropdown">
+          <div class="cyber-dropdown-trigger" id="typeTrigger" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
+            <div class="trigger-left">
+              <span class="type-dot-preview" id="typeDotPreview" style="background:#38BDF8;color:#38BDF8"></span>
+              <div class="trigger-info">
+                <div class="trigger-title" id="typeTriggerTitle">General Assembly</div>
+                <div class="trigger-sub" id="typeTriggerSub">Official Event Category</div>
+              </div>
+            </div>
+            <div class="trigger-right">
+              <span class="trigger-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+          
+          <div class="cyber-dropdown-menu" id="typeMenu" role="listbox"></div>
+        </div>
+        <!-- Hidden select synchronized for backward compatibility -->
+        <select id="nType" style="display:none"></select>
+      </div>
+
+      <!-- 3. Venue -->
+      <div class="f">
+        <label class="f-label" for="nVenue">Venue / Location</label>
+        <div class="form-ctl">
+          <span class="f-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+          </span>
+          <input type="text" id="nVenue" placeholder="e.g. Gymnasium / CS Lab 1" maxlength="60" />
+        </div>
+      </div>
+
+      <!-- 4. Date (Full-width row to prevent mobile screen overlap) -->
+      <div class="f">
+        <label class="f-label" for="nDate">Event Date</label>
+        <div class="form-ctl">
+          <span class="f-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </span>
+          <input type="date" id="nDate" />
+        </div>
+      </div>
+
+      <!-- 5. Time Starts & Time Ends (Mobile-optimized side-by-side that never overlaps) -->
+      <div class="time-row">
+        <div class="f" style="margin-bottom:0;">
+          <label class="f-label" for="nStart">Time Starts</label>
+          <div class="form-ctl compact">
+            <span class="f-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </span>
+            <input type="time" id="nStart" value="08:00" />
+          </div>
+        </div>
+
+        <div class="f" style="margin-bottom:0;">
+          <label class="f-label" for="nEnd">Time Ends</label>
+          <div class="form-ctl compact">
+            <span class="f-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 15 15"/>
+              </svg>
+            </span>
+            <input type="time" id="nEnd" value="17:00" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Grace Period Banner (Placed cleanly below time row) -->
+      <div class="grace-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Check-ins automatically allow a 15-minute grace period after end time.</span>
+      </div>
+
+      <div id="dateConflict" class="empty" style="display:none;color:var(--red);font-size:11.5px;padding:10px;font-weight:700;margin-bottom:12px;"></div>
+
+      <button class="btn navy glow-btn" id="createEvt">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span id="createEvtText">Create Event</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Manage & Delete with Custom Designed Dropdown -->
+  <div class="card">
+    <div class="card-head">
+      <h2>Manage &amp; Delete</h2>
+      <span class="count-pill" id="delCountPill">0</span>
+    </div>
+    
+    <div class="f">
+      <label class="f-label" for="delPick">Event to Delete (any event)</label>
+      <div class="cyber-dropdown" id="delDropdown">
+        <div class="cyber-dropdown-trigger" id="delTrigger" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
+          <div class="trigger-left">
+            <span class="f-icon" style="color:var(--red)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </span>
+            <div class="trigger-info">
+              <div class="trigger-title" id="delTriggerTitle">Select event to delete</div>
+              <div class="trigger-sub" id="delTriggerSub">Active or history event</div>
+            </div>
+          </div>
+          <div class="trigger-right">
+            <span class="trigger-badge danger" id="delTriggerBadge">Delete</span>
+            <span class="trigger-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        
+        <div class="cyber-dropdown-menu" id="delMenu" role="listbox"></div>
+      </div>
+      <!-- Hidden select synchronized for backward compatibility -->
+      <select id="delPick" style="display:none"></select>
+    </div>
+    
+    <button class="btn danger glow-btn" id="deleteEvt" style="margin-top:6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7h16M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"/>
+      </svg>
+      <span>Delete Selected Event</span>
+    </button>
+  </div>
+
+  <!-- Admin Passcode Settings -->
+  <div class="card">
+    <div class="card-head"><h2>Settings</h2></div>
+    <div class="f">
+      <label class="f-label" for="np1">New Admin Passcode</label>
+      <div class="form-ctl">
+        <span class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
+        <input type="password" id="np1" inputmode="numeric" placeholder="New passcode (4+ characters)" maxlength="12" />
+      </div>
+    </div>
+    <div class="f">
+      <label class="f-label" for="np2">Repeat New Passcode</label>
+      <div class="form-ctl">
+        <span class="f-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </span>
+        <input type="password" id="np2" inputmode="numeric" placeholder="Repeat the new passcode" maxlength="12" />
+      </div>
+    </div>
+    <button class="btn line glow-btn" id="savePass"><span>Save Passcode</span></button>
+    <div class="set-note">
+      <b>Current passcode:</b> <code id="curPass" style="font-size:16px;letter-spacing:3px;color:var(--cyan-300);background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);padding:2px 10px;border-radius:8px;">------</code>
+      <button class="btn line glow-btn" id="copyPass" style="margin:8px auto 0;padding:6px 14px;font-size:11px;width:auto;display:inline-flex;"><span>Copy Passcode</span></button>
+      <div style="font-size:11px;color:rgba(186,230,253,0.7);margin-top:6px;">
+        Shared with every admin device through the cloud. Show this to other admins so they can unlock the admin pages.
+      </div>
+    </div>
+  </div>
+
+  <!-- History Events -->
+  <div class="card" id="histCard" style="display:none">
+    <div class="card-head">
+      <h2>History</h2>
+      <span class="count-pill" id="histCount">0</span>
+    </div>
+    <div class="hist-note">Ended events are moved here automatically and no longer show on the active check-in pages. Exported data is deleted after 24 hours.</div>
+    <div id="histList"></div>
+  </div>
+
+</div>
+
+<!-- Delete & End Now Confirmation Notice Modal -->
+<div class="confirm" id="confirmBox">
+  <div class="confirm-box">
+    <div class="confirm-ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7h16M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5"/>
+      </svg>
+    </div>
+    <h3 id="cTitle">Delete this event?</h3>
+    <p><b id="delName"></b><br><span id="delWhere"></span><br><span id="cNote" style="color:var(--red);font-weight:700">All of its attendance records will also be deleted. This cannot be undone.</span></p>
+    <div class="confirm-btns">
+      <button class="btn line glow-btn" id="delNo"><span>No, Keep It</span></button>
+      <button class="btn danger-solid glow-btn" id="delYes"><span>Yes, Delete</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Stationary Fixed 6-Column Bottom Navigation Bar -->
+<nav class="nav">
+  <a href="event-admin.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 10h2M11 10h2M15 10h2M7 14h10"/></svg><span>Code</span></a>
+  <a href="event-select.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h9"/><path d="m17 16 2 2 3-3.5"/></svg><span>Select</span></a>
+  <a href="event-list.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>List</span></a>
+  <a href="event-live.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3 19c.9-3.5 3.4-5.3 6-5.3s5.1 1.8 6 5.3M17 8h4M19 6v4"/></svg><span>Live</span></a>
+  <a href="event-absent.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg><span>Absent</span></a>
+  <a href="admin-about.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span>About</span></a>
+</nav>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5 5L20 6.5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const CONFIG = {
+  LOGO_SRC: "logo.png",
+  SHOW_HINT: false,
+  ORGANIZER: "CCS Student Council",
+  GRACE_MINUTES: 15,
+  CODE_LENGTH: 5,
+  TYPES: [
+    { id:"assembly",      label:"General Assembly",      c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" },
+    { id:"seminar",       label:"Seminar / Talk",        c:"#7DD3FC", bg:"rgba(125, 211, 252, 0.15)" },
+    { id:"workshop",      label:"Workshop / Training",   c:"#22C55E", bg:"rgba(34, 197, 94, 0.15)" },
+    { id:"orientation",   label:"Orientation",           c:"#A78BFA", bg:"rgba(167, 139, 250, 0.15)" },
+    { id:"meeting",       label:"Meeting / Org Mtg",     c:"#94A3B8", bg:"rgba(148, 163, 184, 0.15)" },
+    { id:"competition",   label:"Quiz Bee / Contest",    c:"#F87171", bg:"rgba(248, 113, 113, 0.15)" },
+    { id:"sports",        label:"Sports Fest",           c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" },
+    { id:"recognition",   label:"Recognition / Awards",  c:"#BAE6FD", bg:"rgba(186, 230, 253, 0.15)" },
+    { id:"outreach",      label:"Outreach / Community",  c:"#7DD3FC", bg:"rgba(125, 211, 252, 0.15)" },
+    { id:"fieldtrip",     label:"Field Trip / Immersion",c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" },
+    { id:"fundraising",   label:"Fundraising",           c:"#22C55E", bg:"rgba(34, 197, 94, 0.15)" },
+    { id:"graduation",    label:"Graduation / Moving Up",c:"#E0F2FE", bg:"rgba(224, 242, 254, 0.15)" },
+    { id:"exhibit",       label:"Exhibit / Fair",        c:"#A78BFA", bg:"rgba(167, 139, 250, 0.15)" },
+    { id:"debut",         label:"Debut / Ball",          c:"#BAE6FD", bg:"rgba(186, 230, 253, 0.15)" },
+    { id:"practice",      label:"Practice / Rehearsal",  c:"#94A3B8", bg:"rgba(148, 163, 184, 0.15)" }
+  ],
+  SEED: []
+};
+
+const K_EV = "ccs_ev";
+const K_ATT = "ccs_ev_att";
+const K_ACTIVE = "ccs_ev_active";
+const K_ROSTER = "ccs_admin_roster";
+const K_UNLOCK = "ccs_ev_admin_unlocked";
+const K_HIST = "ccs_ev_history";
+const K_HISTV = "ccs_ev_history_view";
+const K_PASS = "ccs_admin_pass";
+const EXPORT_TTL_MS = 24 * 60 * 60 * 1000;
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+let events = [];
+let att = {};
+let names = {};
+let active = null;
+let selectedDelId = null;
+
+function read(key, fb){
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fb;
+  } catch(e){ return fb; }
+}
+
+function write(key, val){
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e){ return false; }
+}
+
+function isoToday(){
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+
+function minutesOf(hhmm){
+  const p = String(hhmm).split(':');
+  return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+}
+
+function isEventEnded(ev){
+  if (!ev) return false;
+  const endMin = minutesOf(ev.end || '23:59');
+  const endAt = new Date(ev.date + 'T00:00:00').getTime() + endMin * 60000;
+  return Date.now() >= endAt;
+}
+
+const OUT_GRACE_MS = 60 * 60 * 1000;
+function inOutGrace(ev){
+  if (!ev) return false;
+  const endMin = minutesOf(ev.end || '23:59');
+  const endAt = new Date(ev.date + 'T00:00:00').getTime() + endMin * 60000;
+  const now = Date.now();
+  return now >= endAt && now < endAt + OUT_GRACE_MS;
+}
+
+function archiveEndedEvents(){
+  var hist = read(K_HIST, []);
+  var kept = [];
+  var moved = false;
+  events.forEach(function(e){
+    if (isEventEnded(e) && !inOutGrace(e)){
+      if (!hist.some(function(h){ return h.id === e.id; })){
+        e.open = false;
+        e.archivedAt = Date.now();
+        hist.push(e);
+      }
+      moved = true;
+    } else {
+      kept.push(e);
+    }
+  });
+  if (!moved) return;
+  events = kept;
+  write(K_EV, events);
+  write(K_HIST, hist);
+  if (active && !events.some(function(e){ return e.id === active; })){
+    active = events.length ? events[0].id : null;
+    try {
+      if (active) localStorage.setItem(K_ACTIVE, active);
+      else localStorage.removeItem(K_ACTIVE);
+    } catch(e){}
+  }
+}
+
+function cleanupExported(){
+  var now = Date.now();
+  var attChanged = false;
+
+  var keptEv = events.filter(function(e){
+    if (e.exportedAt && now - e.exportedAt > EXPORT_TTL_MS){
+      delete att[e.id];
+      attChanged = true;
+      return false;
+    }
+    return true;
+  });
+  if (keptEv.length !== events.length){
+    events = keptEv;
+    write(K_EV, events);
+    if (active && !events.some(function(e){ return e.id === active; })){
+      active = events.length ? events[0].id : null;
+      try {
+        if (active) localStorage.setItem(K_ACTIVE, active);
+        else localStorage.removeItem(K_ACTIVE);
+      } catch(e){}
+    }
+  }
+
+  var hist = read(K_HIST, []);
+  var keptH = hist.filter(function(h){
+    if (h.exportedAt && now - h.exportedAt > EXPORT_TTL_MS){
+      delete att[h.id];
+      attChanged = true;
+      try {
+        if (localStorage.getItem(K_HISTV) === h.id) localStorage.removeItem(K_HISTV);
+      } catch(e){}
+      return false;
+    }
+    return true;
+  });
+  if (keptH.length !== hist.length) write(K_HIST, keptH);
+  if (attChanged) write(K_ATT, att);
+}
+
+function fmt(mins){
+  let h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if (h === 0) h = 12;
+  return h + ':' + pad(m) + ' ' + ap;
+}
+
+function prettyDate(key){
+  const d = new Date(key + 'T00:00:00');
+  return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
+
+function esc(v){
+  return String(v).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+
+function uid(){
+  return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function makeCode(){
+  let c = '';
+  for (let i = 0; i < CONFIG.CODE_LENGTH; i++){
+    c += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
+  }
+  return c;
+}
+
+function typeOf(tid){
+  const hit = CONFIG.TYPES.filter(function(t){ return t.id === tid; });
+  return hit.length ? hit[0] : { id:"other", label:"Event", c:"#38BDF8", bg:"rgba(56, 189, 248, 0.15)" };
+}
+
+function typeBadge(tid){
+  const t = typeOf(tid);
+  return '<span class="ty" style="background:' + t.bg + ';color:' + t.c + ';border-color:' + t.c + '"><i style="background:' + t.c + '"></i>' + t.label + '</span>';
+}
+
+let toastTimer;
+function toast(msg, bad){
+  const t = $('toast');
+  $('toastMsg').textContent = msg;
+  t.className = 'toast show' + (bad ? ' bad' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+function loadNames(){
+  names = {};
+  read(K_ROSTER, []).forEach(function(s){ names[s.id] = s.name; });
+  const extra = read('ccs_ev_names', {});
+  Object.keys(extra).forEach(function(id){ if (!names[id]) names[id] = extra[id]; });
+}
+
+function passcode(){
+  return read(K_PASS, null) || '';
+}
+
+function loadAll(){
+  events = read(K_EV, null);
+  if (!events){
+    events = CONFIG.SEED.map(function(e){
+      return { id:uid(), name:e.name, type:e.type, venue:e.venue, date:isoToday(), start:e.start, end:e.end || '17:00', code:makeCode(), open:true };
+    });
+    write(K_EV, events);
+  }
+  if (!Array.isArray(events)) events = [];
+  att = read(K_ATT, {});
+  try { active = localStorage.getItem(K_ACTIVE); } catch(e){}
+  if (!active || !events.some(function(e){ return e.id === active; })) active = events.length ? events[0].id : null;
+  archiveEndedEvents();
+  cleanupExported();
+}
+
+function syncAll(){
+  events = read(K_EV, events);
+  att = read(K_ATT, {});
+  try { active = localStorage.getItem(K_ACTIVE) || active; } catch(e){}
+  if (!events.some(function(e){ return e.id === active; })) active = events.length ? events[0].id : null;
+  archiveEndedEvents();
+  cleanupExported();
+}
+
+function currentEvent(){
+  return events.filter(function(e){ return e.id === active; })[0] || null;
+}
+
+function headsOf(evId){
+  return Object.keys(att[evId] || {}).length;
+}
+
+function setActive(id){
+  active = id;
+  try { localStorage.setItem(K_ACTIVE, id); } catch(e){}
+  try { localStorage.removeItem(K_HISTV); } catch(e){}
+}
+
+function shellSub(text){
+  const el = $('shellSub');
+  if (el) el.textContent = text;
+}
+
+/* Close all open dropdown menus when clicking outside */
+document.addEventListener('click', function(e){
+  document.querySelectorAll('.cyber-dropdown').forEach(function(dd){
+    if (!dd.contains(e.target)){
+      dd.classList.remove('open');
+      const tr = dd.querySelector('.cyber-dropdown-trigger');
+      if (tr) tr.setAttribute('aria-expanded', 'false');
+    }
+  });
+  flushMenuRefresh();
+});
+
+/* --- Smooth-scroll helpers: never rebuild a menu WHILE it is open ---- */
+/* Rebuilding the option list mid-scroll/mid-tap made phones jump/glitch. */
+/* Instead we remember a refresh is pending and apply it once it closes.  */
+let needsMenuRefresh = false;
+
+function dropdownOpen(id){
+  const d = $(id);
+  return !!(d && d.classList.contains('open'));
+}
+
+function flushMenuRefresh(){
+  if (!needsMenuRefresh) return;
+  if (dropdownOpen('evtDropdown') || dropdownOpen('typeDropdown') || dropdownOpen('delDropdown')) return;
+  needsMenuRefresh = false;
+  renderPick();
+}
+
+/* Toggle Dropdown Utility */
+function setupDropdownToggle(triggerId, dropdownId){
+  const tr = $(triggerId);
+  const dd = $(dropdownId);
+  if (!tr || !dd) return;
+
+  tr.addEventListener('click', function(e){
+    e.stopPropagation();
+    const isOpen = dd.classList.contains('open');
+    // Close other dropdowns
+    document.querySelectorAll('.cyber-dropdown').forEach(function(d){
+      if (d !== dd) {
+        d.classList.remove('open');
+        const dtr = d.querySelector('.cyber-dropdown-trigger');
+        if (dtr) dtr.setAttribute('aria-expanded', 'false');
+      }
+    });
+    if (!isOpen) flushMenuRefresh(); // apply any skipped sync refresh before opening
+    dd.classList.toggle('open', !isOpen);
+    tr.setAttribute('aria-expanded', String(!isOpen));
+  });
+
+  tr.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      tr.click();
+    } else if (e.key === 'Escape') {
+      dd.classList.remove('open');
+      tr.setAttribute('aria-expanded', 'false');
+      flushMenuRefresh();
+    }
+  });
+}
+
+setupDropdownToggle('evtTrigger', 'evtDropdown');
+setupDropdownToggle('typeTrigger', 'typeDropdown');
+setupDropdownToggle('delTrigger', 'delDropdown');
+
+/* Gate Unlock Logic */
+$('gateBtn').addEventListener('click', function(){
+  if ($('gatePin').value === passcode()){
+    $('gateErr').classList.remove('show');
+    $('gate').classList.add('hide');
+    try { sessionStorage.setItem(K_UNLOCK, '1'); } catch(e){}
+  } else {
+    $('gateErr').classList.add('show');
+    $('gatePin').value = '';
+    if (navigator.vibrate) navigator.vibrate(70);
+  }
+});
+
+$('gatePin').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') $('gateBtn').click();
+});
+
+$('lock').addEventListener('click', function(){
+  try { sessionStorage.removeItem(K_UNLOCK); } catch(e){}
+  $('gatePin').value = '';
+  $('gate').classList.remove('hide');
+});
+
+function initShell(){
+  const src = (CONFIG.LOGO_SRC || '').trim();
+  [$('brandLogo'), $('gateLogo')].forEach(function(img){
+    if (!img) return;
+    img.src = src || "logo.png";
+    img.onerror = function(){ img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23070E2E' stroke='%2338BDF8' stroke-width='4'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%237DD3FC' font-size='22' font-weight='900' font-family='monospace'%3ECCS%3C/text%3E%3C/svg%3E"; };
+  });
+
+  let unlocked = false;
+  try { unlocked = sessionStorage.getItem(K_UNLOCK) === '1'; } catch(e){}
+  if (unlocked) $('gate').classList.add('hide');
+
+  $('gateHint').textContent = '';
+
+  loadNames();
+  loadAll();
+}
+
+/* =========================================================================
+   CUSTOM CYBER EVENT TYPE DROPDOWN RENDERER
+   ========================================================================= */
+function renderTypeDropdown(selectedId){
+  const sel = selectedId || $('nType').value || 'assembly';
+  $('nType').value = sel;
+  
+  const curType = typeOf(sel);
+  $('typeTriggerTitle').textContent = curType.label;
+  $('typeTriggerSub').textContent = 'Official Event Category';
+  $('typeDotPreview').style.background = curType.c;
+  $('typeDotPreview').style.color = curType.c;
+
+  $('typeMenu').innerHTML = CONFIG.TYPES.map(function(t){
+    const isSel = t.id === sel;
+    return '<div class="cyber-dropdown-option' + (isSel ? ' selected' : '') + '" data-val="' + t.id + '">' +
+      '<div class="option-left">' +
+        '<span class="option-dot" style="background:' + t.c + ';color:' + t.c + '"></span>' +
+        '<div class="option-info">' +
+          '<span class="option-title">' + esc(t.label) + '</span>' +
+          '<span class="option-sub">' + (isSel ? 'Selected category' : 'Category template') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="option-check">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  $('typeMenu').querySelectorAll('.cyber-dropdown-option').forEach(function(opt){
+    opt.addEventListener('click', function(e){
+      e.stopPropagation();
+      const val = opt.getAttribute('data-val');
+      $('nType').value = val;
+      if (navigator.vibrate) navigator.vibrate(25);
+      // Close BEFORE rebuilding the menu so the rebuild never fights the tap/scroll.
+      $('typeDropdown').classList.remove('open');
+      $('typeTrigger').setAttribute('aria-expanded', 'false');
+      renderTypeDropdown(val);
+    });
+  });
+}
+
+/* =========================================================================
+   CUSTOM CYBER EVENT SELECTOR & DELETION DROPDOWNS RENDERER
+   ========================================================================= */
+function renderPick(){
+  $('pickCount').textContent = events.length;
+  
+  // 1. Synchronize hidden selects for compatibility
+  var hist = read(K_HIST, []);
+  $('delPick').innerHTML = events.map(function(e){
+    return '<option value="' + e.id + '"' + (e.id === (selectedDelId || active) ? ' selected' : '') + '>' +
+      typeOf(e.type).label + ' - ' + e.name + '</option>';
+  }).join('') + hist.map(function(e){
+    return '<option value="' + e.id + '"' + (e.id === (selectedDelId || active) ? ' selected' : '') + '>[history] ' + e.name + '</option>';
+  }).join('');
+
+  $('evtPick').innerHTML = events.map(function(e){
+    var tag = e.open ? '' : (isEventEnded(e) ? '[ended] ' : '[closed] ');
+    return '<option value="' + e.id + '"' + (e.id === active ? ' selected' : '') + '>' +
+      tag + typeOf(e.type).label + ' - ' + e.name + '</option>';
+  }).join('');
+
+  // 2. Render Custom Event Selector Trigger & Menu
+  // If this dropdown is currently open (user is scrolling/tapping inside it),
+  // skip the menu rebuild this pass - it is applied when the dropdown closes.
+  var evtMenuBusy = dropdownOpen('evtDropdown');
+  if (evtMenuBusy) needsMenuRefresh = true;
+
+  const cur = currentEvent();
+  if (!cur || !events.length){
+    $('evtTriggerTitle').textContent = 'No events created yet';
+    $('evtTriggerSub').textContent = 'Open form below to create one';
+    $('evtTriggerBadge').textContent = 'None';
+    $('evtTriggerBadge').className = 'trigger-badge';
+    if (!evtMenuBusy)
+    $('evtMenu').innerHTML = '<div class="empty" style="padding:14px;border:none;background:transparent;">' +
+      'No active events.<br>' +
+      '<button class="btn line glow-btn" id="emptyCreateBtn" style="margin:10px auto 0;width:auto;padding:6px 14px;font-size:10.5px;">' +
+        '<span>+ Create Event</span>' +
+      '</button>' +
+    '</div>';
+    
+    const ecb = $('emptyCreateBtn');
+    if (!evtMenuBusy && ecb){
+      ecb.addEventListener('click', function(e){
+        e.stopPropagation();
+        $('evtDropdown').classList.remove('open');
+        $('newForm').classList.add('show');
+        $('toggleNew').querySelector('span').textContent = 'Cancel';
+        $('nName').focus();
+      });
+    }
+  } else {
+    const curType = typeOf(cur.type);
+    const ended = isEventEnded(cur);
+    $('evtTriggerTitle').textContent = cur.name;
+    $('evtTriggerSub').textContent = curType.label + ' \u00B7 ' + prettyDate(cur.date) + ' \u00B7 ' + headsOf(cur.id) + ' attended';
+    $('evtTriggerBadge').textContent = ended ? 'Ended' : (cur.open ? 'Active' : 'Closed');
+    $('evtTriggerBadge').className = 'trigger-badge' + (ended ? ' danger' : '');
+
+    if (!evtMenuBusy){
+    $('evtMenu').innerHTML = events.map(function(e){
+      const isSel = e.id === active;
+      const isEnded = isEventEnded(e);
+      const t = typeOf(e.type);
+      const heads = headsOf(e.id);
+      return '<div class="cyber-dropdown-option' + (isSel ? ' selected' : '') + '" data-evid="' + e.id + '">' +
+        '<div class="option-left">' +
+          '<span class="option-dot" style="background:' + t.c + ';color:' + t.c + '"></span>' +
+          '<div class="option-info">' +
+            '<span class="option-title">' + esc(e.name) + '</span>' +
+            '<span class="option-sub">' + esc(t.label) + ' \u00B7 ' + prettyDate(e.date) + ' \u00B7 ' + heads + ' heads' + (isEnded ? ' [Ended]' : '') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="option-check">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    $('evtMenu').querySelectorAll('.cyber-dropdown-option').forEach(function(opt){
+      opt.addEventListener('click', function(e){
+        e.stopPropagation();
+        const id = opt.getAttribute('data-evid');
+        setActive(id);
+        $('evtPick').value = id;
+        if (navigator.vibrate) navigator.vibrate(30);
+        // Close BEFORE rebuilding the menu so the rebuild never fights the tap.
+        $('evtDropdown').classList.remove('open');
+        $('evtTrigger').setAttribute('aria-expanded', 'false');
+        renderPick();
+        toast('Now managing ' + currentEvent().name);
+      });
+    });
+    }
+  }
+
+  // 3. Render Active Event Box
+  if (!cur){
+    $('activeBox').innerHTML = '<div class="empty">No events yet. Use the form below to create one.</div>';
+    shellSub(CONFIG.ORGANIZER + ' - 0 events');
+  } else {
+    var isEnded = isEventEnded(cur);
+    $('activeBox').innerHTML = '<div class="ev sel" style="cursor:default">' +
+      '<div class="ev-b">' + typeBadge(cur.type) +
+      '<div class="nm">' + esc(cur.name) + '</div>' +
+      '<div class="mt">' + prettyDate(cur.date) + ' &middot; ' + fmt(minutesOf(cur.start)) + ' - ' + fmt(minutesOf(cur.end || '17:00')) + '<br>' + esc(cur.venue) +
+      '<span class="dotst ' + (cur.open ? 'open' : 'shut') + '"></span></div>' +
+      '<span class="badge-active">' + (isEnded ? 'Event Ended' : 'Active Event') + '</span>' +
+      '</div>' +
+      '<div class="ev-r"><b>' + headsOf(cur.id) + '</b><span>heads</span></div></div>';
+
+    shellSub(CONFIG.ORGANIZER + ' - ' + events.length + ' event' + (events.length === 1 ? '' : 's'));
+  }
+
+  renderDelDropdown();
+}
+
+/* =========================================================================
+   CUSTOM CYBER DELETION DROPDOWN RENDERER
+   ========================================================================= */
+function renderDelDropdown(){
+  var hist = read(K_HIST, []);
+  const allEvents = events.concat(hist);
+  $('delCountPill').textContent = allEvents.length;
+
+  // Skip rebuilding the list while the user has this dropdown open.
+  var delMenuBusy = dropdownOpen('delDropdown');
+  if (delMenuBusy) needsMenuRefresh = true;
+
+  if (!selectedDelId || !allEvents.some(function(e){ return e.id === selectedDelId; })){
+    selectedDelId = allEvents.length ? allEvents[0].id : null;
+  }
+  if (selectedDelId) $('delPick').value = selectedDelId;
+
+  if (!allEvents.length){
+    $('delTriggerTitle').textContent = 'No events to delete';
+    $('delTriggerSub').textContent = 'Create an event first';
+    $('delTriggerBadge').textContent = 'None';
+    if (!delMenuBusy) $('delMenu').innerHTML = '<div class="empty" style="padding:14px;border:none;background:transparent;">No events available.</div>';
+    return;
+  }
+
+  const selectedTarget = allEvents.filter(function(e){ return e.id === selectedDelId; })[0] || allEvents[0];
+  const isHistTarget = hist.some(function(h){ return h.id === selectedTarget.id; });
+  const targetType = typeOf(selectedTarget.type);
+
+  $('delTriggerTitle').textContent = selectedTarget.name;
+  $('delTriggerSub').textContent = (isHistTarget ? '[History] ' : '[Active] ') + targetType.label + ' \u00B7 ' + prettyDate(selectedTarget.date);
+  $('delTriggerBadge').textContent = isHistTarget ? 'History' : 'Active';
+
+  if (!delMenuBusy){
+  $('delMenu').innerHTML = allEvents.map(function(e){
+    const isHist = hist.some(function(h){ return h.id === e.id; });
+    const isSel = e.id === selectedDelId;
+    const t = typeOf(e.type);
+    const heads = headsOf(e.id);
+    return '<div class="cyber-dropdown-option' + (isSel ? ' selected' : '') + '" data-delid="' + e.id + '">' +
+      '<div class="option-left">' +
+        '<span class="option-dot" style="background:' + (isHist ? '#94A3B8' : t.c) + ';color:' + (isHist ? '#94A3B8' : t.c) + '"></span>' +
+        '<div class="option-info">' +
+          '<span class="option-title">' + esc(e.name) + '</span>' +
+          '<span class="option-sub">' + (isHist ? '[History] ' : '[Active] ') + t.label + ' \u00B7 ' + prettyDate(e.date) + ' \u00B7 ' + heads + ' heads</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="option-check">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  $('delMenu').querySelectorAll('.cyber-dropdown-option').forEach(function(opt){
+    opt.addEventListener('click', function(e){
+      e.stopPropagation();
+      const id = opt.getAttribute('data-delid');
+      selectedDelId = id;
+      $('delPick').value = id;
+      if (navigator.vibrate) navigator.vibrate(25);
+      // Close BEFORE rebuilding the menu so the rebuild never fights the tap.
+      $('delDropdown').classList.remove('open');
+      $('delTrigger').setAttribute('aria-expanded', 'false');
+      renderDelDropdown();
+    });
+  });
+  }
+}
+
+$('evtPick').addEventListener('change', function(e){
+  setActive(e.target.value);
+  renderPick();
+  toast('Now managing ' + currentEvent().name);
+});
+
+var editingId = null;
+
+function resetForm(){
+  editingId = null;
+  $('formTitle').textContent = 'Create New Event';
+  $('createEvtText').textContent = 'Create Event';
+  $('nName').value = '';
+  $('nVenue').value = '';
+  $('nDate').value = isoToday();
+  $('nStart').value = '08:00';
+  $('nEnd').value = '17:00';
+  renderTypeDropdown('assembly');
+  $('dateConflict').style.display = 'none';
+}
+
+$('toggleNew').addEventListener('click', function(){
+  const f = $('newForm');
+  const willShow = !f.classList.contains('show');
+  if (willShow && editingId === null) resetForm();
+  f.classList.toggle('show');
+  $('toggleNew').querySelector('span').textContent = willShow ? 'Cancel' : 'Open Form';
+  if (!willShow) resetForm();
+  if (willShow) $('nName').focus();
+});
+
+function checkDateConflict(date, excludeId){
+  var conflict = events.filter(function(e){ return e.date === date && e.id !== excludeId; });
+  var el = $('dateConflict');
+  if (conflict.length > 0){
+    el.style.display = 'block';
+    el.innerHTML = '&#9888; There is already an event on this date: <b>' + esc(conflict[0].name) + '</b>. Only 1 event per day is allowed.';
+    return true;
+  }
+  el.style.display = 'none';
+  return false;
+}
+
+$('nDate').addEventListener('change', function(){
+  checkDateConflict(this.value, editingId);
+});
+
+$('createEvt').addEventListener('click', function(){
+  const name = $('nName').value.trim();
+  if (!name){ toast('Enter an event name', true); return; }
+
+  const date = $('nDate').value || isoToday();
+  if (checkDateConflict(date, editingId)){ toast('An event already exists on this date', true); return; }
+
+  if (editingId){
+    const ev = events.filter(function(x){ return x.id === editingId; })[0];
+    if (!ev){ toast('Event no longer exists', true); resetForm(); return; }
+
+    ev.name = name;
+    ev.type = $('nType').value || ev.type;
+    ev.venue = $('nVenue').value.trim() || 'TBA';
+    ev.date = date;
+    ev.start = $('nStart').value || '08:00';
+    ev.end = $('nEnd').value || '17:00';
+
+    write(K_EV, events);
+    archiveEndedEvents();
+
+    if (window.ccsSupabase && ccsSupabase.pushEvent) ccsSupabase.pushEvent(ev);
+
+    $('newForm').classList.remove('show');
+    $('toggleNew').querySelector('span').textContent = 'Open Form';
+    resetForm();
+    renderPick();
+    renderHist();
+    toast('Event updated');
+    return;
+  }
+
+  const ev = {
+    id: uid(),
+    name: name,
+    type: $('nType').value || 'assembly',
+    venue: $('nVenue').value.trim() || 'TBA',
+    date: date,
+    start: $('nStart').value || '08:00',
+    end: $('nEnd').value || '17:00',
+    code: makeCode(),
+    open: true
+  };
+
+  events.push(ev);
+  write(K_EV, events);
+  setActive(ev.id);
+
+  if (window.ccsSupabase && ccsSupabase.pushEvent) ccsSupabase.pushEvent(ev);
+
+  $('newForm').classList.remove('show');
+  $('toggleNew').querySelector('span').textContent = 'Open Form';
+  resetForm();
+
+  renderPick();
+  toast(typeOf(ev.type).label + ' created');
+});
+
+var pendingAction = null;
+
+function showConfirm(opts){
+  $('cTitle').textContent = opts.title || 'Are you sure?';
+  $('delName').textContent = opts.name || '';
+  $('delWhere').textContent = opts.sub || '';
+  $('cNote').textContent = opts.note || 'This cannot be undone.';
+  $('delYes').querySelector('span').textContent = opts.yesLabel || 'Yes, Delete';
+  pendingAction = opts.onYes || null;
+  $('confirmBox').classList.add('show');
+}
+
+function closeConfirm(){
+  pendingAction = null;
+  $('confirmBox').classList.remove('show');
+}
+
+$('delNo').addEventListener('click', closeConfirm);
+
+$('confirmBox').addEventListener('click', function(e){
+  if (e.target === $('confirmBox')) closeConfirm();
+});
+
+$('delYes').addEventListener('click', function(){
+  const fn = pendingAction;
+  closeConfirm();
+  if (fn) fn();
+});
+
+function actuallyDelete(id){
+  const inActive = events.filter(function(x){ return x.id === id; })[0];
+  var hist = read(K_HIST, []);
+  const inHist = hist.filter(function(x){ return x.id === id; })[0];
+  if (!inActive && !inHist){ toast('Event not found', true); return; }
+
+  if (inActive){
+    events = events.filter(function(x){ return x.id !== id; });
+    write(K_EV, events);
+    if (active === id){
+      if (events.length){
+        setActive(events[0].id);
+      } else {
+        active = null;
+        try { localStorage.removeItem(K_ACTIVE); } catch(e){}
+      }
+    }
+  }
+  if (inHist){
+    hist = hist.filter(function(x){ return x.id !== id; });
+    write(K_HIST, hist);
+    try { if (localStorage.getItem(K_HISTV) === id) localStorage.removeItem(K_HISTV); } catch(e){}
+  }
+  delete att[id];
+  write(K_ATT, att);
+
+  if (window.ccsSupabase && ccsSupabase.deleteEvent) ccsSupabase.deleteEvent(id);
+
+  selectedDelId = null;
+  renderPick();
+  renderHist();
+  toast('Event deleted', true);
+}
+
+$('deleteEvt').addEventListener('click', function(){
+  const id = selectedDelId || $('delPick').value;
+  if (!id){ toast('No event to delete', true); return; }
+
+  const inActive = events.filter(function(x){ return x.id === id; })[0];
+  var hist = read(K_HIST, []);
+  const inHist = hist.filter(function(x){ return x.id === id; })[0];
+  const ev = inActive || inHist;
+  if (!ev){ toast('Event not found', true); return; }
+
+  showConfirm({
+    title: 'Delete this event?',
+    name: ev.name,
+    sub: inHist ? 'This event is saved in History.' : 'This is an active event and may still be running.',
+    note: 'All of its attendance records will also be deleted. This cannot be undone.',
+    yesLabel: 'Yes, Delete',
+    onYes: function(){ actuallyDelete(id); }
+  });
+});
+
+$('endNow').addEventListener('click', function(){
+  const ev = currentEvent();
+  if (!ev){ toast('No active event to end', true); return; }
+
+  showConfirm({
+    title: 'End this event now?',
+    name: ev.name,
+    sub: 'Check-in stops right away and the event moves to History.',
+    note: 'Use this when the event finishes earlier than planned.',
+    yesLabel: 'Yes, End It',
+    onYes: function(){
+      var d = new Date();
+      ev.end = pad(d.getHours()) + ':' + pad(d.getMinutes());
+      ev.open = false;
+      write(K_EV, events);
+      archiveEndedEvents();
+      if (window.ccsSupabase && ccsSupabase.pushEvent) ccsSupabase.pushEvent(ev);
+      renderPick();
+      renderHist();
+      toast('Event ended - moved to History', true);
+    }
+  });
+});
+
+$('editEvt').addEventListener('click', function(){
+  const ev = currentEvent();
+  if (!ev){ toast('No active event to edit', true); return; }
+
+  editingId = ev.id;
+  $('nName').value = ev.name;
+  $('nVenue').value = ev.venue === 'TBA' ? '' : ev.venue;
+  $('nDate').value = ev.date;
+  $('nStart').value = ev.start || '08:00';
+  $('nEnd').value = ev.end || '17:00';
+  
+  renderTypeDropdown(ev.type);
+  $('nType').value = ev.type;
+  
+  $('formTitle').textContent = 'Edit Event';
+  $('createEvtText').textContent = 'Save Changes';
+  $('newForm').classList.add('show');
+  $('toggleNew').querySelector('span').textContent = 'Cancel';
+  $('dateConflict').style.display = 'none';
+  checkDateConflict(ev.date, editingId);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+function showCurrentPass(){
+  const el = $('curPass');
+  if (el){
+    const pin = read(K_PASS, null);
+    el.textContent = pin || 'not set';
+  }
+}
+showCurrentPass();
+window.addEventListener('storage', showCurrentPass);
+
+$('copyPass').addEventListener('click', function(){
+  const pin = read(K_PASS, null);
+  if (!pin){ toast('No passcode set yet', true); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(pin).then(function(){ toast('Passcode copied'); })
+      .catch(function(){ fallbackCopyPin(pin); });
+  } else fallbackCopyPin(pin);
+});
+
+function fallbackCopyPin(pin){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = pin;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Passcode copied');
+  } catch(e){ toast('Passcode: ' + pin, false); }
+}
+
+$('savePass').addEventListener('click', function(){
+  const a = $('np1').value.trim();
+  const b = $('np2').value.trim();
+  if (a.length < 4){ toast('Passcode must be at least 4 characters', true); return; }
+  if (a !== b){ toast('Passcodes do not match', true); return; }
+
+  write(K_PASS, a);
+  $('np1').value = '';
+  $('np2').value = '';
+  showCurrentPass();
+  if (window.ccsSupabase && ccsSupabase.saveSetting) ccsSupabase.saveSetting('admin_pass', a);
+  toast('Passcode updated - now ' + a);
+});
+
+function renderHist(){
+  var hist = read(K_HIST, []);
+  $('histCard').style.display = hist.length ? '' : 'none';
+  $('histCount').textContent = hist.length;
+  if (!hist.length){ $('histList').innerHTML = ''; return; }
+
+  var now = Date.now();
+  var sorted = hist.slice().sort(function(a, b){ return (b.archivedAt || 0) - (a.archivedAt || 0); });
+
+  $('histList').innerHTML = sorted.map(function(e){
+    var status;
+    if (e.exportedAt){
+      var left = Math.max(0, EXPORT_TTL_MS - (now - e.exportedAt));
+      var hrs = Math.floor(left / 3600000);
+      var mins = Math.floor((left % 3600000) / 60000);
+      status = '<span class="hst exp">Exported &middot; data deletes in ' + hrs + 'h ' + mins + 'm</span>';
+    } else {
+      status = '<span class="hst pend">Not exported</span>';
+    }
+    return '<div class="hrow">' +
+      '<div class="ev-b">' +
+        '<div class="nm" style="margin:0 0 3px">' + esc(e.name) + '</div>' +
+        '<div class="mt">' + prettyDate(e.date) + ' &middot; ' + headsOf(e.id) + ' attended</div>' +
+        status +
+      '</div>' +
+      '<button class="btn-mini" data-hv="' + e.id + '">View</button>' +
+      '</div>';
+  }).join('');
+
+  $('histList').querySelectorAll('[data-hv]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      try { localStorage.setItem(K_HISTV, btn.getAttribute('data-hv')); } catch(e){}
+      window.location.href = 'event-live.html';
+    });
+  });
+}
+
+// Glow Tracking for Buttons
+document.querySelectorAll('.glow-btn').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const rect = btn.getBoundingClientRect();
+    btn.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    btn.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  });
+});
+
+// Binary Matrix Rain Canvas
+const canvas = document.getElementById('binary-canvas');
+if (canvas) {
+  const ctx = canvas.getContext('2d');
+  let width, height, columns, drops;
+  const fontSize = 14;
+  const chars = ['0', '1'];
+
+  // Phones/tablets get ONE static frame (full animation is desktop-only) so
+  // scrolling costs nothing; the desktop loop also pauses when the tab hides.
+  const coarsePointer = window.matchMedia && window.matchMedia('(hover: none), (pointer: coarse)').matches;
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function initBinaryCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    drops = Array.from({ length: columns }, () => Math.floor(Math.random() * -50));
+  }
+
+  function drawBinaryRain() {
+    ctx.fillStyle = 'rgba(3, 7, 18, 0.16)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.font = `${fontSize}px monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      if (i % 8 === 0) {
+        ctx.fillStyle = '#ffffff';
+      } else if (i % 3 === 0) {
+        ctx.fillStyle = '#7dd3fc';
+      } else {
+        ctx.fillStyle = '#38bdf8';
+      }
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  if (coarsePointer || reducedMotion){
+    // Static cyber background for touch devices & reduced-motion users.
+    initBinaryCanvas();
+    drawBinaryRain();
+    window.addEventListener('resize', function(){ initBinaryCanvas(); drawBinaryRain(); });
+  } else {
+    let rainRunning = true;
+
+    function animateBinary() {
+      if (!rainRunning) return;
+      drawBinaryRain();
+      setTimeout(() => {
+        requestAnimationFrame(animateBinary);
+      }, 45);
+    }
+
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden){
+        rainRunning = false;
+      } else if (!rainRunning){
+        rainRunning = true;
+        animateBinary();
+      }
+    });
+
+    window.addEventListener('resize', initBinaryCanvas);
+    initBinaryCanvas();
+    animateBinary();
+  }
+}
+
+// 3D Card Interactive Tilt - mouse devices ONLY.
+// On phones this never runs, so cards are never mid-transform while the user
+// scrolls or taps an event type (that constant re-transform WAS the glitch).
+if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const cards = document.querySelectorAll('.card');
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+  let tiltCleared = false;
+
+  window.addEventListener('mousemove', (e) => {
+    targetX = (window.innerWidth / 2 - e.clientX) / 32;
+    targetY = (window.innerHeight / 2 - e.clientY) / 32;
+  });
+
+  function updateCardTilt() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+
+    const settled = Math.abs(currentX) < 0.001 && Math.abs(currentY) < 0.001 &&
+                    Math.abs(targetX) < 0.001 && Math.abs(targetY) < 0.001;
+    if (!settled){
+      cards.forEach(c => {
+        c.style.transform = `rotateY(${-currentX}deg) rotateX(${currentY}deg)`;
+      });
+      tiltCleared = false;
+    } else if (!tiltCleared){
+      // Fully back at rest: release the inline transform so the card stops
+      // redrawing itself - cheaper compositing even on desktop.
+      cards.forEach(c => { c.style.transform = ''; });
+      tiltCleared = true;
+    }
+    requestAnimationFrame(updateCardTilt);
+  }
+  updateCardTilt();
+}
+
+window.addEventListener('storage', function(){ syncAll(); renderPick(); renderHist(); });
+
+setInterval(function(){
+  var evBefore = JSON.stringify(events);
+  var histBefore = localStorage.getItem(K_HIST) || '';
+  syncAll();
+  if (JSON.stringify(events) !== evBefore || (localStorage.getItem(K_HIST) || '') !== histBefore){
+    renderPick();
+    renderHist();
+  } else {
+    flushMenuRefresh(); // apply any refresh that was skipped while a dropdown was open
+  }
+}, 5000);
+
+initShell();
+renderTypeDropdown('assembly');
+$('nDate').value = isoToday();
+renderPick();
+renderHist();
+</script>
+
+<!-- Cloud sync: auto-push event changes -->
+<script>
+setInterval(function(){
+  if (window.ccsSupabase && ccsSupabase.watchEvents) ccsSupabase.watchEvents();
+}, 4000);
+</script>
+
+<!-- Supabase SDK & Dual-Mode Sync Engine -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+
+</body>
+</html>

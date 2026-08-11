@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#030712" />
+<title>CCS My Profile - Colegio de San Francisco Javier</title>
+  
+<style>
+:root{
+  --navy-950:#030712;
+  --navy-900:#070E2E;
+  --navy-800:#0A1440;
+  --navy-700:#101C57;
+  --navy-600:#182460;
+  --navy-500:#232F7A;
+  --navy-400:#3A46A0;
+  
+  /* Cyber Cyan / Electric Azure Palette (Less Yellow) */
+  --cyan-500:#0284C7;
+  --cyan-400:#38BDF8;
+  --cyan-300:#7DD3FC;
+  --cyan-200:#BAE6FD;
+  --cyan-100:#E0F2FE;
+  
+  --azure-glow:#38bdf8;
+  --azure-deep:#0284c7;
+  --ice-white:#FFFFFF;
+  
+  --green-400:#22C55E;
+  --green-500:#0F7A50;
+  --red-400:#F87171;
+  --red-500:#EF4444;
+  --red-600:#DC2626;
+
+  --paper:#FFFFFF;
+  --mist:rgba(10, 20, 64, 0.65);
+  --line:rgba(56, 189, 248, 0.2);
+  --ink:#FFFFFF;
+  --ink-soft:rgba(186, 230, 253, 0.75);
+  --shadow:0 30px 60px rgba(0,0,0,0.75);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ min-height:100%; }
+
+body{
+  font-family:var(--font);
+  color:#fff;
+  background:var(--navy-950);
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(3, 7, 18, 0) 70%),
+    radial-gradient(60% 50% at 50% 100%, rgba(16, 28, 87, 0.45) 0%, rgba(3, 7, 18, 0) 80%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  min-height:100dvh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* Binary Matrix Canvas Background */
+#binary-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+/* Background Cyber Grid with Pulse Animation */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(circle at 50% 50%, #000 25%, transparent 80%);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 25%, transparent 80%);
+  animation: gridBreathe 8s ease-in-out infinite alternate;
+}
+
+@keyframes gridBreathe {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Ambient Cyber Glow Orbs */
+.cyber-orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(60px);
+  opacity: 0.25;
+  animation: floatOrb 12s ease-in-out infinite alternate;
+}
+.cyber-orb-1 {
+  top: 10%;
+  left: -40px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--cyan-400), transparent 70%);
+}
+.cyber-orb-2 {
+  bottom: 15%;
+  right: -50px;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, var(--cyan-500), transparent 70%);
+  animation-delay: -6s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(25px, 35px) scale(1.15); }
+  100% { transform: translate(-20px, -25px) scale(0.95); }
+}
+
+/* Offline / Online Network Indicator Pill */
+.offline-pill {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 100;
+  font-family: monospace, var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 20px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  background: rgba(7, 14, 46, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: var(--cyan-300);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 10px rgba(56, 189, 248, 0.2);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: pillEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pillEntrance {
+  from { opacity:0; transform:translateY(-15px); }
+  to { opacity:1; transform:translateY(0); }
+}
+.offline-pill.is-offline {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: var(--red-400);
+}
+.offline-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green-400);
+  box-shadow: 0 0 8px var(--green-400);
+  animation: pulseDot 2s infinite ease-in-out;
+}
+.offline-pill.is-offline .offline-dot {
+  background: var(--red-400);
+  box-shadow: 0 0 8px var(--red-400);
+}
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+/* Glassmorphism Sticky Top Bar */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:25;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  background:rgba(7, 14, 46, 0.85);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid rgba(56, 189, 248, 0.22);
+  box-shadow:0 4px 30px rgba(0,0,0,0.65), 0 1px 0 rgba(255,255,255,0.08) inset;
+  transition:all 0.3s ease;
+}
+.topbar .logo{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:2px;
+  flex-shrink:0;
+  object-fit:contain;
+  border:1.5px solid var(--cyan-400);
+  box-shadow:0 0 16px rgba(56, 189, 248, 0.45);
+  transition:transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.topbar .logo:hover{
+  transform:scale(1.08) rotate(5deg);
+  box-shadow:0 0 24px rgba(56, 189, 248, 0.7);
+}
+.topbar .who{ flex:1; min-width:0; }
+.topbar .who h1{
+  font-size:15.5px;
+  font-weight:800;
+  letter-spacing:.03em;
+  background:linear-gradient(135deg, #ffffff 25%, var(--cyan-300) 70%, var(--cyan-100) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shineText 8s linear infinite;
+}
+.topbar .who p{
+  font-size:11px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:700;
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.06em;
+  opacity:0.9;
+}
+
+/* Main App Wrapper */
+.wrap{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:430px;
+  margin:0 auto;
+  padding:16px 15px calc(env(safe-area-inset-bottom) + 98px);
+  transform-style:preserve-3d;
+  animation:shrinkContainer 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes shrinkContainer {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Animations */
+.anim-fade-down { animation: fadeDown 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+.anim-pop       { animation: logoShrink 1.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-fade-up-1 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both; }
+.anim-fade-up-2 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both; }
+.anim-fade-up-3 { animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both; }
+
+@keyframes logoShrink {
+  0% { opacity: 0; transform: translateY(35px) scale(1.3); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); filter: blur(5px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(26px) scale(0.97); filter: blur(5px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes shineText {
+  to { background-position: 200% center; }
+}
+
+/* Cyber Floating Status Badge */
+.badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 16px;
+  background:rgba(7, 14, 46, 0.7);
+  border:1px solid rgba(56, 189, 248, 0.3);
+  border-radius:99px;
+  font-size:10.5px;
+  font-family:monospace, var(--font);
+  font-weight:700;
+  letter-spacing:.12em;
+  color:var(--cyan-300);
+  text-transform:uppercase;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  margin:4px auto 14px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5), inset 0 0 12px rgba(56, 189, 248, 0.12);
+  transition:all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation:badgeFloat 4s ease-in-out infinite alternate;
+}
+@keyframes badgeFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+.badge:hover {
+  border-color:rgba(56, 189, 248, 0.6);
+  box-shadow:0 6px 28px rgba(56, 189, 248, 0.3), inset 0 0 16px rgba(56, 189, 248, 0.25);
+  transform:translateY(-2px) scale(1.02);
+}
+.badge-dot {
+  width:7px;
+  height:7px;
+  background:var(--cyan-400);
+  border-radius:50%;
+  box-shadow:0 0 10px var(--cyan-400);
+  animation:pulseDot 2s infinite ease-in-out;
+}
+
+/* Glassmorphism Interactive Cards with Holographic Shimmer */
+.card{
+  position:relative;
+  width:100%;
+  background:rgba(7, 14, 46, 0.68);
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(56, 189, 248, 0.22);
+  border-radius:24px;
+  padding:22px 18px;
+  margin-top:14px;
+  box-shadow:0 28px 60px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.15);
+  overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease-out, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.card::after {
+  content:"";
+  position:absolute;
+  top:-50%;
+  left:-50%;
+  width:200%;
+  height:200%;
+  background:linear-gradient(45deg, transparent 40%, rgba(56, 189, 248, 0.06) 50%, transparent 60%);
+  transform:rotate(25deg);
+  pointer-events:none;
+  animation:cardShine 9s infinite ease-in-out;
+}
+@keyframes cardShine {
+  0% { transform:translateX(-100%) rotate(25deg); }
+  35%, 100% { transform:translateX(100%) rotate(25deg); }
+}
+
+.card:hover{
+  border-color:rgba(56, 189, 248, 0.45);
+  box-shadow:0 34px 70px rgba(0,0,0,0.85), 0 0 30px rgba(56, 189, 248, 0.18), inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.card.strip::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:4px;
+  background:linear-gradient(90deg, var(--cyan-500), var(--cyan-300) 35%, #ffffff 50%, var(--cyan-300) 65%, var(--cyan-500));
+  background-size:200% auto;
+  box-shadow:0 0 14px rgba(56, 189, 248, 0.7);
+  animation:stripSweep 6s linear infinite;
+}
+@keyframes stripSweep {
+  to { background-position: 200% center; }
+}
+
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(56, 189, 248, 0.16);
+}
+.card-head h2{
+  font-size:13px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.card-head .sub{
+  font-size:11px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:600;
+  letter-spacing:.06em;
+  opacity:0.9;
+}
+
+/* Dual-Orbital Avatar Profile Header with Levitation & Spin */
+.profile-header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:20px;
+}
+
+.avatar-wrapper{
+  position:relative;
+  width:72px;
+  height:72px;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  animation:avatarFloat 5s ease-in-out infinite alternate;
+}
+@keyframes avatarFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+.avatar-ring-outer {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, var(--cyan-400) 40%, var(--cyan-200) 70%, transparent 100%);
+  animation: spinRing 6s linear infinite;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 6px var(--cyan-400));
+}
+
+.avatar-ring-inner {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, transparent 0%, rgba(56, 189, 248, 0.9) 50%, transparent 100%);
+  animation: spinRingReverse 3.8s linear infinite;
+  opacity: 0.95;
+}
+
+@keyframes spinRing { 100% { transform: rotate(360deg); } }
+@keyframes spinRingReverse { 100% { transform: rotate(-360deg); } }
+
+.profile-avatar{
+  position:relative;
+  z-index:2;
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  font-weight:800;
+  color:#ffffff;
+  background:linear-gradient(140deg, #38bdf8 0%, #0284c7 65%, #070e2e 100%);
+  box-shadow:0 0 0 2px rgba(56, 189, 248, 0.5), 0 0 24px rgba(56, 189, 248, 0.45), 0 10px 24px rgba(0,0,0,0.7);
+  letter-spacing:.05em;
+  transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow:hidden;
+}
+.profile-avatar::before {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.3) 50%, transparent 60%);
+  transform:rotate(25deg);
+  animation:avatarShine 4s infinite ease-in-out;
+}
+@keyframes avatarShine {
+  0% { transform:translateX(-100%) rotate(25deg); }
+  40%, 100% { transform:translateX(100%) rotate(25deg); }
+}
+
+.avatar-wrapper:hover .profile-avatar{
+  transform:scale(1.06);
+  box-shadow:0 0 0 2.5px var(--cyan-300), 0 0 30px rgba(56, 189, 248, 0.7), 0 14px 28px rgba(0,0,0,0.8);
+}
+
+.profile-info{ flex:1; min-width:0; }
+.profile-info h3{
+  font-size:17px;
+  font-weight:800;
+  color:#ffffff;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:.02em;
+  background:linear-gradient(135deg, #ffffff 40%, var(--cyan-200) 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.profile-info span{
+  display:inline-block;
+  font-size:12px;
+  color:var(--cyan-300);
+  font-family:monospace, var(--font);
+  font-weight:700;
+  margin-top:3px;
+  letter-spacing:.06em;
+  text-shadow:0 0 8px rgba(56, 189, 248, 0.4);
+}
+.profile-info em{
+  display:block;
+  font-style:normal;
+  font-size:11px;
+  color:rgba(255, 255, 255, 0.7);
+  font-weight:600;
+  margin-top:2px;
+  letter-spacing:.04em;
+}
+
+/* Info Rows with Staggered Slide Entrance */
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 6px;
+  border-bottom:1px solid rgba(56, 189, 248, 0.12);
+  border-radius:8px;
+  transition:all 0.25s ease;
+}
+.info-row:hover {
+  background:rgba(56, 189, 248, 0.06);
+  padding-left:10px;
+  padding-right:10px;
+}
+.info-row:last-child{ border-bottom:0; }
+.info-row .il{
+  font-size:11px;
+  font-weight:700;
+  color:rgba(186, 230, 253, 0.9);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-family:monospace, var(--font);
+}
+.info-row .ir{
+  font-size:13.5px;
+  font-weight:700;
+  color:#ffffff;
+  text-align:right;
+  letter-spacing:.02em;
+}
+
+.divider{
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent);
+  margin:18px 0;
+}
+
+/* Interactive Cursor-Tracking Glow Buttons */
+.btn{
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position:relative;
+  width:100%;
+  padding:15px;
+  border-radius:14px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  overflow:hidden;
+  cursor:pointer;
+  border:none;
+  outline:none;
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.btn::before {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background:radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+  opacity:0;
+  transform:scale(0.6);
+  transition:opacity 0.3s ease, transform 0.3s ease;
+}
+.btn:hover::before {
+  opacity:1;
+  transform:scale(1);
+}
+
+.btn svg{
+  width:18px;
+  height:18px;
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:hover svg{ transform:translateX(4px); }
+
+/* Primary Cyan Action (Edit Profile & Save) */
+.btn.cyan, .btn.gold, .btn.navy, .btn-primary{
+  background:radial-gradient(circle at var(--mouse-x) var(--mouse-y), #38bdf8 0%, #0284c7 100%);
+  color:#030712;
+  box-shadow:0 8px 28px rgba(2, 132, 199, 0.4);
+  border:1px solid rgba(255, 255, 255, 0.35);
+}
+.btn.cyan:hover, .btn.gold:hover, .btn.navy:hover, .btn-primary:hover{
+  transform:translateY(-2px) scale(1.015);
+  box-shadow:0 12px 36px rgba(56, 189, 248, 0.55), 0 0 20px rgba(56, 189, 248, 0.35);
+}
+.btn.cyan:active, .btn.gold:active, .btn.navy:active, .btn-primary:active{
+  transform:translateY(1px) scale(0.985);
+}
+
+/* Glass Secondary Action (Cancel) */
+.btn.line{
+  background:radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(56, 189, 248, 0.18) 0%, rgba(10, 20, 64, 0.6) 80%);
+  color:#fff;
+  border:1px solid rgba(56, 189, 248, 0.3);
+  box-shadow:0 6px 20px rgba(0,0,0,0.35);
+}
+.btn.line:hover{
+  background:rgba(56, 189, 248, 0.18);
+  border-color:rgba(56, 189, 248, 0.6);
+  transform:translateY(-2px) scale(1.015);
+  box-shadow:0 8px 28px rgba(0,0,0,0.5), 0 0 16px rgba(56, 189, 248, 0.25);
+}
+.btn.line:active{ transform:translateY(1px) scale(0.985); }
+
+/* Danger Action (Sign Out) */
+.btn.danger{
+  background:radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(239, 68, 68, 0.2) 0%, rgba(10, 20, 64, 0.6) 80%);
+  color:#f87171;
+  border:1px solid rgba(239, 68, 68, 0.38);
+}
+.btn.danger:hover{
+  background:rgba(239, 68, 68, 0.28);
+  border-color:rgba(239, 68, 68, 0.7);
+  color:#ffffff;
+  transform:translateY(-2px) scale(1.015);
+  box-shadow:0 8px 28px rgba(239, 68, 68, 0.35);
+}
+.btn.danger:active{ transform:translateY(1px) scale(0.985); }
+
+.btn.danger-solid{
+  background:linear-gradient(135deg, #ef4444, #dc2626);
+  color:#ffffff;
+  border:1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:0 8px 24px rgba(220, 38, 38, 0.45);
+}
+.btn.danger-solid:hover{
+  box-shadow:0 12px 32px rgba(239, 68, 68, 0.6);
+  transform:translateY(-2px) scale(1.015);
+}
+
+.btn:disabled{ opacity:.5; pointer-events:none; }
+.btn + .btn{ margin-top:10px; }
+
+/* Form Controls with Cyber Focus */
+.f{ margin-bottom:16px; }
+.f-label{
+  display:block;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  color:var(--cyan-300);
+  margin-bottom:8px;
+  font-family:monospace, var(--font);
+}
+.control{
+  display:flex;
+  align-items:center;
+  background:rgba(10, 20, 64, 0.7);
+  border:1.5px solid rgba(56, 189, 248, 0.28);
+  border-radius:14px;
+  transition:border-color 0.25s, box-shadow 0.25s, background 0.25s;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.control:focus-within{
+  border-color:var(--cyan-400);
+  background:rgba(10, 20, 64, 0.95);
+  box-shadow:0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 16px rgba(56, 189, 248, 0.3), inset 0 2px 6px rgba(0,0,0,0.45);
+}
+.control .prefix{
+  font-size:14px;
+  font-weight:800;
+  color:var(--cyan-400);
+  padding:0 4px 0 14px;
+  letter-spacing:.08em;
+  user-select:none;
+  font-family:monospace, var(--font);
+}
+.control input, .control select{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:none;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:600;
+  color:#ffffff;
+  padding:14px 14px 14px 4px;
+}
+.control input::placeholder{
+  color:rgba(125, 211, 252, 0.4);
+  font-weight:500;
+}
+.control input.caps{
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.err{
+  display:none;
+  font-size:11.5px;
+  color:#f87171;
+  font-weight:700;
+  margin-top:7px;
+  padding-left:2px;
+  animation:shakeErr 0.3s ease;
+}
+@keyframes shakeErr {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.err.show{ display:block; }
+.hint{
+  font-size:11px;
+  color:rgba(186, 230, 253, 0.7);
+  font-weight:600;
+  margin-top:6px;
+  font-family:monospace, var(--font);
+}
+
+/* Sign Out Confirmation Modal */
+.confirm{
+  position:fixed;
+  inset:0;
+  z-index:70;
+  display:none;
+  place-items:center;
+  padding:22px;
+  background:rgba(3, 7, 18, 0.85);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.confirm.show{ display:grid; animation:modalFadeIn 0.25s ease; }
+@keyframes modalFadeIn {
+  from { opacity:0; } to { opacity:1; }
+}
+
+.confirm-box{
+  width:100%;
+  max-width:340px;
+  background:rgba(7, 14, 46, 0.95);
+  backdrop-filter:blur(26px);
+  -webkit-backdrop-filter:blur(26px);
+  border:1px solid rgba(239, 68, 68, 0.4);
+  border-radius:24px;
+  padding:24px 20px 20px;
+  text-align:center;
+  box-shadow:0 30px 70px rgba(0,0,0,0.9), 0 0 35px rgba(239, 68, 68, 0.25);
+  animation:popModal .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes popModal{ from{ opacity:0; transform:scale(.9) translateY(10px); } to{ opacity:1; transform:none; } }
+
+.confirm-ic{
+  width:52px;
+  height:52px;
+  margin:0 auto;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  background:rgba(239, 68, 68, 0.15);
+  border:1px solid rgba(239, 68, 68, 0.35);
+  color:#f87171;
+  box-shadow:0 0 20px rgba(239, 68, 68, 0.25);
+  animation:pulseDanger 2s infinite ease-in-out;
+}
+@keyframes pulseDanger {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(239, 68, 68, 0.25); }
+  50% { transform: scale(1.06); box-shadow: 0 0 30px rgba(239, 68, 68, 0.45); }
+}
+
+.confirm-ic svg{ width:24px; height:24px; }
+.confirm-box h3{
+  font-size:16px;
+  font-weight:800;
+  margin:14px 0 6px;
+  color:#ffffff;
+}
+.confirm-box p{
+  font-size:12px;
+  color:rgba(255, 255, 255, 0.72);
+  font-weight:500;
+  line-height:1.6;
+}
+.confirm-btns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:18px;
+}
+.confirm-btns .btn{
+  margin-top:0;
+  padding:12px 6px;
+  font-size:11.5px;
+}
+
+/* Nav — static, fixed at bottom of screen so it's always visible */
+.nav{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:0;
+  z-index:999;
+  width:100%;
+  max-width:430px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  background:rgba(7, 14, 46, 0.94);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(56, 189, 248, 0.25);
+  padding:10px 8px calc(env(safe-area-inset-bottom) + 10px);
+  box-shadow:0 -10px 35px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255,255,255,0.08) inset;
+  pointer-events:auto;
+}
+.nav a{
+  text-decoration:none;
+  color:rgba(255, 255, 255, 0.5);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.05em;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:5px 0;
+  transition:color .2s;
+}
+.nav a svg{
+  width:20px;
+  height:20px;
+}
+.nav a:hover{
+  color:var(--cyan-300);
+}
+.nav a.active{
+  color:var(--cyan-300);
+}
+
+/* Cyber Glowing Toast */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:calc(env(safe-area-inset-bottom) + 84px);
+  transform:translate(-50%,220%);
+  min-width:240px;
+  max-width:calc(100% - 34px);
+  background:rgba(7, 14, 46, 0.95);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  color:#fff;
+  border:1px solid rgba(56, 189, 248, 0.45);
+  font-size:13px;
+  font-weight:700;
+  padding:13px 18px;
+  border-radius:14px;
+  box-shadow:0 16px 45px rgba(0,0,0,0.75), 0 0 25px rgba(56, 189, 248, 0.3);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .35s ease, visibility 0s linear .35s;
+  z-index:60;
+}
+.toast.show{
+  transform:translate(-50%,0);
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .35s ease, visibility 0s linear 0s;
+}
+.toast.bad{
+  background:rgba(142, 32, 32, 0.95);
+  border-color:rgba(248, 113, 113, 0.55);
+  box-shadow:0 16px 45px rgba(0,0,0,0.75), 0 0 25px rgba(239, 68, 68, 0.4);
+}
+.toast svg{
+  width:18px;
+  height:18px;
+  flex-shrink:0;
+  color:var(--cyan-300);
+}
+.toast.bad svg{ color:#fca5a5; }
+
+/* Empty / Not Signed In State */
+.empty{
+  text-align:center;
+  padding:36px 16px;
+  color:rgba(255, 255, 255, 0.78);
+  font-size:13px;
+  font-weight:600;
+  line-height:1.7;
+}
+.empty-icon{
+  width:60px;
+  height:60px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  background:rgba(56, 189, 248, 0.15);
+  border:1px solid rgba(56, 189, 248, 0.35);
+  display:grid;
+  place-items:center;
+  color:var(--cyan-300);
+  box-shadow:0 0 24px rgba(56, 189, 248, 0.25);
+  animation:avatarFloat 4s ease-in-out infinite alternate;
+}
+.empty-icon svg{ width:28px; height:28px; }
+
+/* Tech Footer */
+.foot {
+  margin-top:26px;
+  margin-bottom:8px;
+  text-align:center;
+  font-size:11px;
+  color:rgba(255,255,255,0.45);
+  letter-spacing:.04em;
+  line-height:1.6;
+}
+.foot b { color:var(--cyan-300); font-weight:700; }
+.foot code { font-family: monospace; color: var(--cyan-200); opacity: 0.9; }
+</style>
+</head>
+<body>
+
+<!-- Ambient Cyber Glow Orbs -->
+<div class="cyber-orb cyber-orb-1"></div>
+<div class="cyber-orb cyber-orb-2"></div>
+
+<!-- Network Connection Indicator -->
+<div class="offline-pill" id="netStatus">
+  <span class="offline-dot" id="netDot"></span>
+  <span id="netText">ONLINE</span>
+</div>
+
+<!-- Binary Matrix Rain Canvas -->
+<canvas id="binary-canvas"></canvas>
+
+<!-- Sticky Top Bar with logo.png -->
+<header class="topbar">
+  <img class="logo" id="brandLogo" src="logo.png" alt="CCS Logo" />
+  <div class="who">
+    <h1>My Profile</h1>
+    <p id="shellSub">Student</p>
+  </div>
+</header>
+
+<!-- Main Container -->
+<div class="wrap">
+
+  <!-- Floating Status Badge -->
+  <div style="display:flex; justify-content:center;">
+    <div class="badge anim-fade-down">
+      <span class="badge-dot"></span> <span id="binaryStatus">CCS STUDENT PORTAL</span>
+    </div>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="card strip anim-fade-up-1" id="profileCard">
+    <div class="profile-header">
+      <div class="avatar-wrapper">
+        <div class="avatar-ring-outer"></div>
+        <div class="avatar-ring-inner"></div>
+        <div class="profile-avatar" id="avatar">?</div>
+      </div>
+      <div class="profile-info">
+        <h3 id="dispName">Loading...</h3>
+        <span id="dispId"></span>
+        <em id="dispCourseYear"></em>
+      </div>
+    </div>
+    
+    <div id="infoDisplay">
+      <div class="info-row">
+        <span class="il">School ID</span>
+        <span class="ir" id="infoId">—</span>
+      </div>
+      <div class="info-row">
+        <span class="il">Full Name</span>
+        <span class="ir" id="infoName">—</span>
+      </div>
+      <div class="info-row">
+        <span class="il">Course</span>
+        <span class="ir" id="infoCourse">—</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn cyan glow-btn" id="editBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20h9M16.5 3.5a2 2 0 0 1 2.8 2.83L7 19l-4 1 1-4L14.5 3.66z"/>
+      </svg>
+      <span>Edit Profile</span>
+    </button>
+
+    <button class="btn danger glow-btn" id="signOutBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+      </svg>
+      <span>Sign Out</span>
+    </button>
+  </div>
+
+  <!-- Edit Profile Card -->
+  <div class="card anim-fade-up-2" id="editCard" style="display:none">
+    <div class="card-head">
+      <h2>Edit Profile</h2>
+      <span class="sub">Update your details</span>
+    </div>
+
+    <div class="f">
+      <label class="f-label">School ID</label>
+      <div class="control">
+        <span class="prefix">COL-</span>
+        <input class="caps" type="text" id="editId" readonly disabled style="color:var(--ink-soft);font-weight:600;opacity:0.75" />
+      </div>
+      <div class="hint">School ID cannot be changed.</div>
+    </div>
+
+    <div class="f">
+      <label class="f-label">Full Name</label>
+      <div class="control" id="nameCtrl">
+        <input type="text" id="editName" placeholder="Dela Cruz, Juan M." maxlength="60" style="text-transform:none;letter-spacing:normal;font-weight:600" />
+      </div>
+      <div class="err" id="nameErr"></div>
+    </div>
+
+    <div class="f">
+      <label class="f-label">Course</label>
+      <div class="control" style="border-style:dashed;opacity:0.85">
+        <input type="text" id="editCourse" readonly disabled style="text-transform:none;letter-spacing:normal;font-weight:700;color:var(--ink-soft)" />
+      </div>
+      <div class="hint">Course is set based on enrollment.</div>
+    </div>
+
+    <button class="btn cyan glow-btn" id="saveBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m4 12.5 5 5L20 6.5"/>
+      </svg>
+      <span>Save Changes</span>
+    </button>
+
+    <button class="btn line glow-btn" id="cancelBtn" type="button">
+      <span>Cancel</span>
+    </button>
+  </div>
+
+  <!-- Tech Footer -->
+  <p class="foot anim-fade-up-3">
+    <b>College of Computer Studies</b><br>
+    &copy; <span id="year"></span> Colegio de San Francisco Javier &middot; <code>v4.0.0</code>
+  </p>
+
+</div>
+
+<!-- Sign Out Confirmation Modal -->
+<div class="confirm" id="signOutBox">
+  <div class="confirm-box">
+    <div class="confirm-ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+      </svg>
+    </div>
+    <h3>Log out of your account?</h3>
+    <p>Are you sure you want to log out?<br>You will need to sign in again to check in to events.</p>
+    <div class="confirm-btns">
+      <button class="btn line glow-btn" id="soNo" type="button">No, Stay</button>
+      <button class="btn danger-solid glow-btn" id="soYes" type="button">Yes, Log Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Navigation Bar -->
+<nav class="nav">
+  <a href="student-checkin.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12.5 5 5L20 6.5"/></svg>
+    <span>Check In</span>
+  </a>
+  <a href="student-events.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    <span>Events</span>
+  </a>
+  <a href="student-record.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+    <span>My Record</span>
+  </a>
+  <a href="student-profile.html" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.9-3.6 3.6-5.5 7-5.5s6.1 1.9 7 5.5"/></svg>
+    <span>Profile</span>
+  </a>
+  <a href="student-about.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5h.01"/></svg>
+    <span>About</span>
+  </a>
+</nav>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m4 12.5 5 5L20 6.5"/>
+  </svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+(function(){
+  // --- Network Connection Monitor ---
+  const netStatus = document.getElementById('netStatus');
+  const netText = document.getElementById('netText');
+  
+  function updateOnlineStatus() {
+    if (!netStatus || !netText) return;
+    if (navigator.onLine) {
+      netStatus.classList.remove('is-offline');
+      netText.textContent = "ONLINE";
+    } else {
+      netStatus.classList.add('is-offline');
+      netText.textContent = "OFFLINE MODE";
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // --- Live Binary Rain Matrix Canvas (Cyan & Ice-White Palette) ---
+  const canvas = document.getElementById('binary-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let width, height, columns, drops;
+    const fontSize = 14;
+    const chars = ['0', '1'];
+
+    function initBinaryCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      columns = Math.floor(width / fontSize);
+      drops = Array.from({ length: columns }, () => Math.floor(Math.random() * -50));
+    }
+
+    function drawBinaryRain() {
+      ctx.fillStyle = 'rgba(3, 7, 18, 0.16)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        if (i % 8 === 0) {
+          ctx.fillStyle = '#ffffff'; // Bright ice-white glint
+        } else if (i % 3 === 0) {
+          ctx.fillStyle = '#7dd3fc'; // Electric cyan light
+        } else {
+          ctx.fillStyle = '#38bdf8'; // Primary cyber cyan
+        }
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    function animateBinary() {
+      drawBinaryRain();
+      setTimeout(() => {
+        requestAnimationFrame(animateBinary);
+      }, 45);
+    }
+
+    window.addEventListener('resize', initBinaryCanvas);
+    initBinaryCanvas();
+    animateBinary();
+  }
+
+  // --- Smooth 3D Card Interactive Tilt with Physics ---
+  const cards = document.querySelectorAll('.card');
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+
+  window.addEventListener('mousemove', (e) => {
+    targetX = (window.innerWidth / 2 - e.clientX) / 32;
+    targetY = (window.innerHeight / 2 - e.clientY) / 32;
+  });
+
+  function updateCardTilt() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    cards.forEach(c => {
+      if (c.style.display !== 'none') {
+        c.style.transform = `rotateY(${-currentX}deg) rotateX(${currentY}deg)`;
+      }
+    });
+    requestAnimationFrame(updateCardTilt);
+  }
+  updateCardTilt();
+
+  // --- Dynamic Binary Status Text Toggle ---
+  const statusEl = document.getElementById('binaryStatus');
+  if (statusEl) {
+    const textOptions = ["CCS STUDENT PORTAL", "01000011 01000011 01010011", "SYSTEM ONLINE", "PROFILE SECURE"];
+    let textIndex = 0;
+    setInterval(() => {
+      textIndex = (textIndex + 1) % textOptions.length;
+      statusEl.style.opacity = '0';
+      statusEl.style.transform = 'translateY(-4px)';
+      setTimeout(() => {
+        statusEl.textContent = textOptions[textIndex];
+        statusEl.style.opacity = '1';
+        statusEl.style.transform = 'translateY(0)';
+      }, 250);
+    }, 3500);
+  }
+
+  // --- Glow Tracking for Buttons ---
+  function initGlowButtons() {
+    document.querySelectorAll('.glow-btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const rect = btn.getBoundingClientRect();
+        btn.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        btn.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      });
+    });
+  }
+  initGlowButtons();
+
+  // --- Dynamic Year ---
+  const yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // === Core Student Profile Functionality ===
+  var ID_PREFIX = "COL-";
+  var COURSE_LABEL = "BSIT - BS Information Technology";
+  var COURSE_CODE = "BSIT";
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function getStudentId(){
+    var id = null;
+    try { id = localStorage.getItem('ccs_session'); } catch(e){}
+    if (!id) {
+      try {
+        var raw = localStorage.getItem('ccs_ev_me');
+        if (raw) id = ID_PREFIX + raw;
+      } catch(e2){}
+    }
+    return id;
+  }
+
+  function initials(name){
+    if (!name) return '?';
+    var parts = String(name).replace(',', '').split(/\s+/).filter(function(b){ return b; });
+    if (!parts.length) return '?';
+    return ((parts[0][0] || '') + (parts.length > 1 ? parts[1][0] : '')).toUpperCase();
+  }
+
+  var toastTimer;
+  function toast(msg, bad){
+    var t = $('toast');
+    var tm = $('toastMsg');
+    if (!t || !tm) return;
+    tm.textContent = msg;
+    t.className = 'toast show' + (bad ? ' bad' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2500);
+  }
+
+  function loadProfile(){
+    var id = getStudentId();
+    if (!id) {
+      var wrap = document.querySelector('.wrap');
+      if (wrap) {
+        wrap.innerHTML = '<div class="card strip anim-fade-up-1"><div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.9-3.6 3.6-5.5 7-5.5s6.1 1.9 7 5.5"/></svg></div><h3 style="color:#fff;font-size:16.5px;margin-bottom:8px;font-weight:800;letter-spacing:.02em;">Not Signed In</h3>You are not signed in yet.<br><br><a href="index.html" class="btn cyan glow-btn" style="display:inline-flex;width:auto;padding:13px 30px;text-decoration:none"><span>Go to Sign In</span></a></div></div>';
+        initGlowButtons();
+      }
+      return;
+    }
+
+    // Read raw data from localStorage
+    var raw = null;
+    try { raw = localStorage.getItem('ccs_students'); } catch(e){}
+    var all = null;
+    try { all = raw ? JSON.parse(raw) : null; } catch(e){}
+    var data = all && all[id] ? all[id] : null;
+
+    var name = (data && data.name) || '';
+    var course = (data && data.course) || COURSE_CODE;
+
+    // Also try ccs_ev_names for name fallback
+    if (!name) {
+      try {
+        var nm = JSON.parse(localStorage.getItem('ccs_ev_names') || '{}');
+        name = nm[id] || '';
+      } catch(e){}
+    }
+
+    var hasName = name.length > 0;
+
+    // Display
+    if ($('avatar')) $('avatar').textContent = initials(hasName ? name : id);
+    if ($('dispName')) $('dispName').textContent = hasName ? name : 'Name not set';
+    if ($('dispId')) $('dispId').textContent = id;
+    if ($('dispCourseYear')) $('dispCourseYear').textContent = course;
+    if ($('infoId')) $('infoId').textContent = id;
+    if ($('infoName')) $('infoName').textContent = hasName ? name : '—';
+    if ($('infoCourse')) $('infoCourse').textContent = COURSE_LABEL;
+    if ($('shellSub')) $('shellSub').textContent = hasName ? name : id;
+
+    // Edit fields
+    if ($('editId')) $('editId').value = id.replace(ID_PREFIX, '');
+    if ($('editName')) $('editName').value = hasName ? name : '';
+    if ($('editCourse')) $('editCourse').value = COURSE_LABEL;
+  }
+
+  // --- Logo Setup: Uses logo.png with Fallback ---
+  var logoEl = $('brandLogo');
+  if (logoEl) {
+    logoEl.src = "logo.png";
+    logoEl.onerror = function(){
+      logoEl.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23070E2E' stroke='%2338BDF8' stroke-width='4'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%237DD3FC' font-size='22' font-weight='900' font-family='monospace'%3ECCS%3C/text%3E%3C/svg%3E";
+    };
+  }
+
+  // Initial Load
+  loadProfile();
+
+  // Cloud Sync Listener
+  window.addEventListener('storage', function(){
+    if (typeof loadProfile === 'function') loadProfile();
+  });
+
+  // Safe Listener Helper
+  function on(id, ev, fn){
+    var el = $(id);
+    if (el) el.addEventListener(ev, fn);
+  }
+
+  // Redirect after sign-out: prefer login.html, fall back to index.html
+  function goToLogin(){
+    try {
+      fetch('login.html', { method: 'HEAD' }).then(function(r){
+        window.location.href = (r && r.ok) ? 'login.html' : 'index.html';
+      }).catch(function(){ window.location.href = 'index.html'; });
+    } catch(e){ window.location.href = 'index.html'; }
+  }
+
+  // Event Listeners
+  on('editBtn', 'click', function(){
+    if ($('editCard')) {
+      $('editCard').style.display = 'block';
+      $('editCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  on('cancelBtn', 'click', function(){
+    if ($('editCard')) $('editCard').style.display = 'none';
+    loadProfile();
+  });
+
+  on('saveBtn', 'click', function(){
+    var id = getStudentId();
+    if (!id) { toast('Not signed in', true); return; }
+    
+    var name = $('editName') ? $('editName').value.trim() : '';
+    
+    if ($('nameErr')) $('nameErr').classList.remove('show');
+    
+    var ok = true;
+    if (name.length < 2){
+      if ($('nameErr')) {
+        $('nameErr').textContent = 'Please enter your full name.';
+        $('nameErr').classList.add('show');
+      }
+      ok = false;
+    }
+    if (!ok) return;
+    
+    // Save directly to localStorage
+    try {
+      var all = JSON.parse(localStorage.getItem('ccs_students') || '{}');
+      all[id] = { name: name, course: COURSE_CODE };
+      localStorage.setItem('ccs_students', JSON.stringify(all));
+      var nm = JSON.parse(localStorage.getItem('ccs_ev_names') || '{}');
+      nm[id] = name;
+      localStorage.setItem('ccs_ev_names', JSON.stringify(nm));
+    } catch(e){}
+
+    // Cloud sync: push the updated name so admin pages on other devices show it right away
+    if (window.ccsSupabase && ccsSupabase.pushStudent){
+      ccsSupabase.pushStudent({ id: id, name: name, course: COURSE_CODE || '', year: '', section: '' });
+    }
+    
+    if ($('editCard')) $('editCard').style.display = 'none';
+    loadProfile();
+    toast('Profile updated successfully!');
+  });
+
+  on('signOutBtn', 'click', function(){
+    if ($('signOutBox')) $('signOutBox').classList.add('show');
+  });
+
+  on('soNo', 'click', function(){
+    if ($('signOutBox')) $('signOutBox').classList.remove('show');
+  });
+
+  if ($('signOutBox')) {
+    $('signOutBox').addEventListener('click', function(e){
+      if (e.target === $('signOutBox')) $('signOutBox').classList.remove('show');
+    });
+  }
+
+  on('soYes', 'click', function(){
+    if ($('signOutBox')) $('signOutBox').classList.remove('show');
+    try {
+      localStorage.removeItem('ccs_session');
+      localStorage.removeItem('ccs_ev_me');
+    } catch(e){}
+    toast('Signed out');
+    setTimeout(goToLogin, 700);
+  });
+
+  // Embedded Service Worker for Web Caching (Offline Support)
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    const swCode = `
+      const CACHE_NAME = 'ccs-portal-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+      });
+    `;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
+})();
+</script>
+
+<!-- Supabase SDK & Dual-Mode Sync Engine -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a27debe13a641c66',t:'MTc4NjE4NTgyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

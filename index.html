@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#04081E" />
+<title>CCS Student Portal - Colegio de San Francisco Javier</title>
+
+<style>
+:root{
+  --navy-950:#030712;
+  --navy-900:#070E2E;
+  --navy-800:#0A1440;
+  --navy-700:#101C57;
+  --navy-600:#182460;
+  
+  /* Primary Cyber Color Palette */
+  --cyan-500:#0284C7;
+  --cyan-400:#38BDF8;
+  --cyan-300:#7DD3FC;
+  --gold-300:#FDE047;
+  --gold-400:#EAB308;
+  
+  --paper:#FFFFFF;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html, body{ height:100%; overflow:hidden; }
+
+body{
+  font-family:var(--font);
+  color:#fff;
+  background:var(--navy-950);
+  background-image:
+    radial-gradient(90% 70% at 50% 0%, rgba(56, 189, 248, 0.12) 0%, rgba(3, 7, 18, 0) 70%),
+    radial-gradient(60% 50% at 50% 100%, rgba(16, 28, 87, 0.4) 0%, rgba(3, 7, 18, 0) 80%),
+    linear-gradient(180deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  perspective: 1000px;
+}
+
+/* Binary Matrix Canvas Background */
+#binary-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.22;
+}
+
+/* Background Cyber Grid */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+  background-size:36px 36px;
+  mask-image:radial-gradient(circle at 50% 50%, #000 20%, transparent 80%);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 20%, transparent 80%);
+}
+
+.app{
+  position:relative;
+  z-index:1;
+  width:100%;
+  max-width:430px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  transform-style: preserve-3d;
+  animation: shrinkContainer 2.2s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes shrinkContainer {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --- Keyframe Animations (Slower Timings) --- */
+.anim-fade-down { animation: fadeDown 1.8s cubic-bezier(0.25, 1, 0.5, 1) 0.8s both; }
+.anim-pop       { animation: logoShrink 2.4s cubic-bezier(0.25, 1, 0.5, 1) both; }
+.anim-fade-up-1 { animation: fadeUp 1.8s cubic-bezier(0.25, 1, 0.5, 1) 1.2s both; }
+.anim-fade-up-2 { animation: fadeUp 1.8s cubic-bezier(0.25, 1, 0.5, 1) 1.5s both; }
+.anim-fade-up-3 { animation: fadeUp 1.8s cubic-bezier(0.25, 1, 0.5, 1) 1.8s both; }
+
+/* Large to Small Slower Shrink Animation for Logo */
+@keyframes logoShrink {
+  0% {
+    opacity: 0;
+    transform: translateY(90px) scale(2.4);
+    filter: blur(10px);
+  }
+  25% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-25px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+/* Floating Status Pill */
+.badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 16px;
+  background:rgba(10, 20, 64, 0.6);
+  border:1px solid rgba(56, 189, 248, 0.25);
+  border-radius:99px;
+  font-size:11px;
+  font-family: monospace, var(--font);
+  font-weight:700;
+  letter-spacing:.12em;
+  color:var(--cyan-300);
+  text-transform:uppercase;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  margin-bottom:22px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 0 12px rgba(56, 189, 248, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.badge:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 4px 25px rgba(56, 189, 248, 0.2), inset 0 0 12px rgba(56, 189, 248, 0.2);
+}
+.badge-dot {
+  width:7px;
+  height:7px;
+  background:var(--cyan-400);
+  border-radius:50%;
+  box-shadow:0 0 10px var(--cyan-400);
+  animation:pulse 2s infinite ease-in-out;
+}
+@keyframes pulse {
+  0%, 100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.3; transform:scale(0.7); }
+}
+
+/* Dual-Orbital Logo Wrapper */
+.logo-wrapper {
+  position: relative;
+  margin: 0 auto 22px;
+  width: 130px;
+  height: 130px;
+  display: grid;
+  place-items: center;
+  z-index: 10;
+}
+
+.logo-ring-outer {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0%, var(--cyan-400) 45%, var(--gold-300) 70%, transparent 100%);
+  animation: spinRing 7s linear infinite;
+  opacity: 0.8;
+}
+
+.logo-ring-inner {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, transparent 0%, rgba(56, 189, 248, 0.8) 50%, transparent 100%);
+  animation: spinRingReverse 4s linear infinite;
+  opacity: 0.9;
+}
+
+@keyframes spinRing { 100% { transform: rotate(360deg); } }
+@keyframes spinRingReverse { 100% { transform: rotate(-360deg); } }
+
+.logo-frame{
+  position: relative;
+  z-index: 1;
+  width:116px;
+  height:116px;
+  border-radius:50%;
+  background:var(--navy-900);
+  padding:6px;
+  display:grid;
+  place-items:center;
+  box-shadow:0 0 0 2px rgba(56, 189, 248, 0.4), 0 0 30px rgba(56, 189, 248, 0.25), 0 18px 40px rgba(0,0,0,.7);
+  overflow:hidden;
+  animation:logoGlow 4s infinite alternate ease-in-out;
+}
+.logo-frame img{ width:100%; height:100%; object-fit:contain; display:block; border-radius:50%; }
+
+.logo-fallback{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:linear-gradient(150deg, var(--navy-700), var(--navy-900));
+  color:var(--cyan-300);
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.16em;
+  line-height:1.4;
+  text-align:center;
+}
+
+@keyframes logoGlow {
+  0% { box-shadow:0 0 0 2px rgba(56,189,248,0.3), 0 0 20px rgba(56,189,248,0.2), 0 18px 40px rgba(0,0,0,.6); }
+  100% { box-shadow:0 0 0 2px rgba(56,189,248,0.6), 0 0 35px rgba(56,189,248,0.4), 0 22px 48px rgba(0,0,0,.8); }
+}
+
+/* Multi-line Animated Holographic Typography */
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.title-line {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.char-anim {
+  display: inline-block;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 70%, var(--gold-300) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  opacity: 0;
+  transform: translateY(15px) rotateX(-90deg);
+  animation: charReveal 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards, shineText 8s linear infinite;
+}
+
+@keyframes charReveal {
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+@keyframes shineText {
+  to { background-position: 200% center; }
+}
+
+.sub {
+  font-size:12px;
+  color:var(--cyan-400);
+  font-family: monospace, var(--font);
+  font-weight:600;
+  letter-spacing:.1em;
+  margin-top:6px;
+  margin-bottom:26px;
+  opacity: 0.85;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+/* Glassmorphism Interactive Container */
+.card {
+  width:100%;
+  background:rgba(7, 14, 46, 0.55);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(56, 189, 248, 0.18);
+  border-radius:24px;
+  padding:26px 22px;
+  box-shadow:0 30px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+/* Interactive Cursor-Tracking Glow Buttons */
+.btn {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position:relative;
+  width:100%;
+  padding:16px;
+  border-radius:14px;
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  overflow:hidden;
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.btn-primary {
+  background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), #38bdf8 0%, #0284c7 100%);
+  color:#030712;
+  box-shadow:0 8px 26px rgba(2, 132, 199, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.btn-primary:hover {
+  transform:translateY(-2px) scale(1.01);
+  box-shadow:0 12px 32px rgba(56, 189, 248, 0.5);
+}
+.btn-primary:active { transform:translateY(1px) scale(0.99); }
+
+.btn-secondary {
+  background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(56, 189, 248, 0.15) 0%, rgba(10, 20, 64, 0.4) 80%);
+  color:#fff;
+  border:1px solid rgba(56, 189, 248, 0.25);
+}
+.btn-secondary:hover {
+  background:rgba(56, 189, 248, 0.12);
+  border-color:rgba(56, 189, 248, 0.5);
+  transform:translateY(-2px) scale(1.01);
+  box-shadow:0 8px 25px rgba(0,0,0,0.4);
+}
+.btn-secondary:active { transform:translateY(1px) scale(0.99); }
+
+.btn svg {
+  width:18px;
+  height:18px;
+  transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn:hover svg { transform:translateX(5px); }
+
+/* Offline Network Status Indicator */
+.offline-pill {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 100;
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: rgba(10, 20, 64, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: var(--cyan-300);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+.offline-pill.is-offline {
+  border-color: rgba(234, 179, 8, 0.4);
+  color: var(--gold-300);
+}
+.offline-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+.offline-pill.is-offline .offline-dot {
+  background: var(--gold-400);
+  box-shadow: 0 0 8px var(--gold-400);
+}
+
+/* Tech Footer */
+.foot {
+  margin-top:28px;
+  font-size:11px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:.04em;
+  line-height:1.6;
+}
+.foot b { color:var(--cyan-300); font-weight:700; }
+.foot code { font-family: monospace; color: var(--gold-300); opacity: 0.9; }
+</style>
+</head>
+
+<body>
+
+<!-- Network Connection Indicator -->
+<div class="offline-pill" id="netStatus">
+  <span class="offline-dot" id="netDot"></span>
+  <span id="netText">ONLINE</span>
+</div>
+
+<!-- Binary Matrix Rain Canvas -->
+<canvas id="binary-canvas"></canvas>
+
+<div class="app" id="app">
+
+  <!-- Floating Status Badge -->
+  <div class="badge anim-fade-down">
+    <span class="badge-dot"></span> <span id="binaryStatus">01000011 01000011 01010011</span>
+  </div>
+
+  <!-- Animated Logo Wrapper -->
+  <div class="logo-wrapper anim-pop">
+    <div class="logo-ring-outer"></div>
+    <div class="logo-ring-inner"></div>
+    <div class="logo-frame">
+      <img id="schoolLogo" src="logo.png" alt="School Logo" hidden />
+      <div class="logo-fallback" id="logoFallback">CCS<br>PORTAL</div>
+    </div>
+  </div>
+
+  <!-- Main Tech Header with Stacked Entrance Lines -->
+  <div class="anim-fade-up-1">
+    <div class="title-container" id="animatedTitle"></div>
+    <p class="sub">&lt;Colegio de San Francisco Javier /&gt;</p>
+  </div>
+
+  <!-- 3D Tilting Interactive Card -->
+  <div class="card anim-fade-up-2" id="tiltCard">
+    <a href="login.html" class="btn btn-primary glow-btn">
+      <span>Log In to Portal</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+
+    <a href="login.html#signup" class="btn btn-secondary glow-btn" onclick="sessionStorage.setItem('ccs_tab','signup')">
+      <span>Create Account</span>
+    </a>
+  </div>
+
+  <!-- Tech Footer -->
+  <p class="foot anim-fade-up-3">
+    <b>College of Computer Studies</b><br>
+    &copy; <span id="year"></span> Colegio de San Francisco Javier &middot; <code>v4.0.0</code>
+  </p>
+
+</div>
+
+<script>
+(function(){
+  // --- Network Connection Monitor ---
+  const netStatus = document.getElementById('netStatus');
+  const netText = document.getElementById('netText');
+  
+  function updateOnlineStatus() {
+    if (navigator.onLine) {
+      netStatus.classList.remove('is-offline');
+      netText.textContent = "ONLINE";
+    } else {
+      netStatus.classList.add('is-offline');
+      netText.textContent = "OFFLINE MODE";
+    }
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // --- Stacked Dynamic Entrance Animation for Title ---
+  const titleLines = ["College of Computer", "Studies"];
+  const titleContainer = document.getElementById('animatedTitle');
+  let globalCharIndex = 0;
+
+  titleLines.forEach(lineText => {
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'title-line';
+
+    lineText.split('').forEach(char => {
+      const span = document.createElement('span');
+      span.className = 'char-anim';
+      if (char === ' ') {
+        span.innerHTML = '&nbsp;';
+      } else {
+        span.textContent = char;
+      }
+      span.style.animationDelay = `${1.2 + globalCharIndex * 0.045}s, ${globalCharIndex * 0.1}s`;
+      lineDiv.appendChild(span);
+      globalCharIndex++;
+    });
+
+    titleContainer.appendChild(lineDiv);
+  });
+
+  // --- Logo Fallback & Dynamic Year ---
+  const img = document.getElementById('schoolLogo');
+  const fall = document.getElementById('logoFallback');
+  img.onload = () => { img.hidden = false; fall.style.display = 'none'; };
+  img.onerror = () => { img.hidden = true; fall.style.display = 'grid'; };
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // --- Dynamic Binary Text Toggle for Status Pill ---
+  const statusEl = document.getElementById('binaryStatus');
+  const textOptions = ["CCS STUDENT PORTAL", "01000011 01000011 01010011", "SYSTEM ONLINE"];
+  let textIndex = 0;
+  setInterval(() => {
+    textIndex = (textIndex + 1) % textOptions.length;
+    statusEl.style.opacity = '0';
+    setTimeout(() => {
+      statusEl.textContent = textOptions[textIndex];
+      statusEl.style.opacity = '1';
+    }, 200);
+  }, 3500);
+
+  // --- Live Binary Rain Matrix Canvas (Local Standalone Engine) ---
+  const canvas = document.getElementById('binary-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height, columns, drops;
+  const fontSize = 14;
+  const chars = ['0', '1'];
+
+  function initBinaryCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    drops = Array.from({ length: columns }, () => Math.floor(Math.random() * -50));
+  }
+
+  function drawBinaryRain() {
+    ctx.fillStyle = 'rgba(3, 7, 18, 0.16)';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.font = `${fontSize}px monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      
+      if (i % 10 === 0) {
+        ctx.fillStyle = '#fde047';
+      } else {
+        ctx.fillStyle = '#38bdf8';
+      }
+
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  function animate() {
+    drawBinaryRain();
+    setTimeout(() => {
+      requestAnimationFrame(animate);
+    }, 45);
+  }
+
+  window.addEventListener('resize', initBinaryCanvas);
+  initBinaryCanvas();
+  animate();
+
+  // --- Smooth Lerping 3D Card Tilt ---
+  const card = document.getElementById('tiltCard');
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+
+  window.addEventListener('mousemove', (e) => {
+    targetX = (window.innerWidth / 2 - e.clientX) / 25;
+    targetY = (window.innerHeight / 2 - e.clientY) / 25;
+  });
+
+  function updateTilt() {
+    currentX += (targetX - currentX) * 0.1;
+    currentY += (targetY - currentY) * 0.1;
+    card.style.transform = `rotateY(${-currentX}deg) rotateX(${currentY}deg)`;
+    requestAnimationFrame(updateTilt);
+  }
+  updateTilt();
+
+  // --- Glow Tracking for Buttons ---
+  document.querySelectorAll('.glow-btn').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      btn.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+      btn.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    });
+  });
+
+  // --- Embedded Service Worker for Web Caching (Offline Support) ---
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    const swCode = `
+      const CACHE_NAME = 'ccs-portal-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./'])));
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+      });
+    `;
+    const blob = new Blob([swCode], { type: 'text/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
+})();
+</script>
+
+
+<!-- Supabase SDK & Dual-Mode Sync Engine -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+
+</body>
+</html>
