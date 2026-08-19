@@ -1160,20 +1160,40 @@ function msLeft(ev){
 }
 
 function rotating(ev){
-  return !!ev && events.length > 0 && CONFIG.AUTO_REFRESH && ev.open && !ev.autoOff && (!isEventEnded(ev) || inOutGrace(ev));
+  // Once the event ends, check-in is closed but its QR must remain available
+  // throughout the time-out window. `open` is intentionally not required
+  // during that window because syncCode closes the event at its end time.
+  return !!ev && events.length > 0 && CONFIG.AUTO_REFRESH && !ev.autoOff &&
+    ((ev.open && !isEventEnded(ev)) || inOutGrace(ev));
+}
+
+function pushEventChange(ev){
+  // The QR/code is consumed by student devices, so publish every change rather
+  // than leaving it only in this administrator browser's localStorage.
+  if (ev && window.ccsSupabase && ccsSupabase.pushEvent) {
+    ccsSupabase.pushEvent(ev).catch(function(){});
+  }
 }
 
 function syncCode(){
   if (!events.length) return false;
   const ev = currentEvent();
   if (!ev) return false;
-  if (isEventEnded(ev)){
+  if (isEventEnded(ev) && !inOutGrace(ev)){
     if (ev.open){
       ev.open = false;
       write(K_EV, events);
+      pushEventChange(ev);
       return true;
     }
     return false;
+  }
+  // At the end time close normal check-in, but keep rotating the QR during
+  // the one-hour time-out-only window.
+  if (isEventEnded(ev) && ev.open){
+    ev.open = false;
+    write(K_EV, events);
+    pushEventChange(ev);
   }
   if (!ev.code){
     ev.codeAnchor = Date.now();
@@ -1181,6 +1201,7 @@ function syncCode(){
     ev.code = codeFor(ev, 0);
     ev.rotVersion = (ev.rotVersion || 0) + 1;
     write(K_EV, events);
+    pushEventChange(ev);
     localRotState[ev.id] = { ver: ev.rotVersion, anchor: ev.codeAnchor, slot: ev.codeSlot, code: ev.code, salt: ev.salt, prevCode: ev.prevCode, prevUntil: ev.prevUntil };
     return true;
   }
@@ -1193,6 +1214,7 @@ function syncCode(){
   ev.codeSlot = slot;
   ev.rotVersion = (ev.rotVersion || 0) + 1;
   write(K_EV, events);
+  pushEventChange(ev);
   localRotState[ev.id] = { ver: ev.rotVersion, anchor: ev.codeAnchor, slot: ev.codeSlot, code: ev.code, salt: ev.salt, prevCode: ev.prevCode, prevUntil: ev.prevUntil };
   return true;
 }
@@ -1223,9 +1245,15 @@ function renderCountdown(){
   btn.style.display = '';
   btn.textContent = ev.autoOff ? 'Resume' : 'Pause';
   if (isEventEnded(ev)){
+    if (inOutGrace(ev)){
+      fill.className = 'cd-fill';
+      fill.style.width = '100%';
+      text.textContent = 'TIME OUT ONLY - QR remains available for ' + Math.ceil((OUT_GRACE_MS - (Date.now() - (new Date(ev.date + 'T00:00:00').getTime() + minutesOf(ev.end || '23:59') * 60000))) / 60000) + ' min';
+      return;
+    }
     fill.className = 'cd-fill off';
     fill.style.width = '100%';
-    text.textContent = 'Event has ended - code generation stopped';
+    text.textContent = 'Event has ended - time-out window closed';
     btn.style.display = 'none';
     return;
   }
@@ -1372,6 +1400,7 @@ $('toggleOpen').addEventListener('click', function(){
   }
   ev.open = !ev.open;
   write(K_EV, events);
+  pushEventChange(ev);
   render();
   toast(ev.open ? 'Check-in opened' : 'Check-in closed', !ev.open);
 });
@@ -1392,6 +1421,7 @@ $('newCode').addEventListener('click', function(){
   ev.code = codeFor(ev, 0);
   ev.rotVersion = (ev.rotVersion || 0) + 1;
   write(K_EV, events);
+  pushEventChange(ev);
   localRotState[ev.id] = { ver: ev.rotVersion, anchor: ev.codeAnchor, slot: ev.codeSlot, code: ev.code, salt: ev.salt, prevCode: ev.prevCode, prevUntil: ev.prevUntil };
   render();
   flashCode();
@@ -1530,5 +1560,5 @@ setInterval(function(){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d948599e3edb24',t:'MTc4NzE0MzgxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
