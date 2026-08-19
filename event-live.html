@@ -656,6 +656,7 @@ body::before{
   <div class="who">
     <h1>Live Attendance</h1>
     <p id="shellSub">Organizer</p>
+    <p id="syncStatus" style="margin:4px 0 0;font:700 9px/1.2 monospace;color:#fbbf24">Syncing cloud data...</p>
   </div>
 </header>
 
@@ -699,13 +700,14 @@ body::before{
     <div class="card-head">
       <h2>Export Reports</h2>
     </div>
-    <button class="btn line glow-btn" id="exportPdf">
+    <p id="exportSyncNote" style="margin:0 0 10px;font:700 10px/1.35 monospace;color:#fbbf24">Syncing cloud data — PDF export will unlock when ready.</p>
+    <button class="btn line glow-btn" id="exportPdf" disabled style="opacity:.5;cursor:not-allowed">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/>
       </svg>
       <span>Export PDF (Present Only)</span>
     </button>
-    <button class="btn line glow-btn" id="exportFull">
+    <button class="btn line glow-btn" id="exportFull" disabled style="opacity:.5;cursor:not-allowed">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"/>
       </svg>
@@ -1052,6 +1054,35 @@ function shellSub(text){
   if (el) el.textContent = text;
 }
 
+// PDF exports are enabled only after the current Supabase snapshot arrives.
+// That makes every administrator export the same cloud attendance data.
+var cloudDataReady = false;
+function setCloudSyncStatus(state){
+  var label = $('syncStatus');
+  var note = $('exportSyncNote');
+  var canExport = state === 'ready';
+  cloudDataReady = canExport;
+  if (label){
+    label.textContent = canExport ? 'Online · cloud data synced' : (state === 'offline' ? 'Offline · PDF export unavailable' : 'Syncing cloud data...');
+    label.style.color = canExport ? '#86efac' : '#fbbf24';
+  }
+  if (note){
+    note.textContent = canExport ? 'Cloud data synced — exports use the shared Supabase record.' : (state === 'offline' ? 'Connect to the internet to sync before exporting.' : 'Syncing cloud data — PDF export will unlock when ready.');
+    note.style.color = canExport ? '#86efac' : '#fbbf24';
+  }
+  ['exportPdf', 'exportFull'].forEach(function(id){
+    var btn = $(id);
+    if (!btn) return;
+    btn.disabled = !canExport;
+    btn.style.opacity = canExport ? '' : '.5';
+    btn.style.cursor = canExport ? '' : 'not-allowed';
+  });
+}
+window.addEventListener('ccs-synced', function(){ setCloudSyncStatus('ready'); });
+window.addEventListener('offline', function(){ setCloudSyncStatus('offline'); });
+window.addEventListener('online', function(){ setCloudSyncStatus('syncing'); });
+setCloudSyncStatus(navigator.onLine === false ? 'offline' : 'syncing');
+
 function initShell(){
   const src = (CONFIG.LOGO_SRC || '').trim();
   const brandLogo = $('brandLogo');
@@ -1250,6 +1281,7 @@ function pdfSchoolHeader(doc, pageW, opts){
 
 // PDF Export - Present Only
 $('exportPdf').addEventListener('click', function(){
+  if (!cloudDataReady){ toast('Wait for cloud sync before exporting', true); return; }
   const ev = currentEvent();
   const e = entries();
   const ids = Object.keys(e);
@@ -1378,6 +1410,7 @@ $('exportPdf').addEventListener('click', function(){
 
 // Combined Full Report PDF
 $('exportFull').addEventListener('click', function(){
+  if (!cloudDataReady){ toast('Wait for cloud sync before exporting', true); return; }
   const ev = currentEvent();
   if (!ev){ toast('No event selected', true); return; }
 
@@ -1603,5 +1636,5 @@ setInterval(function(){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a27e4c507e7149e4',t:'MTc4NjE4OTc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a27e4c507e7149e4',t:'MTc4NjE4OTc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d98a344a003710',t:'MTc4NzE0NjUwOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
