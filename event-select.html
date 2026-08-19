@@ -1257,10 +1257,32 @@ html, body{ touch-action:manipulation; }
     </div>
     <h1>Organizer Access</h1>
     <p>CCS Student Council Portal</p>
+
+    <!-- First-visit onboarding: only appears when the auto-generated PIN
+         hasn't been acknowledged yet (ccs_passcode_acknowledged !== '1'). -->
+    <div class="onboard-banner" id="onboardBanner" style="display:none">
+      <div class="onboard-title">First-Time Setup</div>
+      <div class="onboard-text">Your organizer passcode has been generated. Copy it now — you (and every other admin) will need it to unlock these pages.</div>
+      <div class="onboard-pin-row">
+        <code id="onboardPin">------</code>
+        <button class="onboard-btn" id="onboardCopy" type="button">Copy</button>
+      </div>
+      <button class="onboard-done" id="onboardDone" type="button">I've saved it — Continue</button>
+    </div>
+
     <input type="password" id="gatePin" inputmode="numeric" placeholder="PASSCODE" maxlength="12" autocomplete="off" />
     <div class="gate-err" id="gateErr">&#9888; Incorrect Passcode</div>
     <button class="btn navy glow-btn" id="gateBtn" style="margin-top:14px"><span>Unlock</span></button>
-    <div class="gate-hint" id="gateHint"></div>
+    <div class="gate-hint" id="gateHint">
+      <button class="gate-reveal-link" id="gateRevealBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Show current passcode
+      </button>
+      <div class="gate-reveal-box" id="gateRevealBox" style="display:none">
+        <code id="gatePassValue">------</code>
+        <button class="gate-reveal-copy" id="gateCopyBtn" type="button">Copy</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1928,6 +1950,93 @@ $('lock').addEventListener('click', function(){
   $('gate').classList.remove('hide');
 });
 
+/* =========================================================================
+   GATE PASSCODE REVEAL + FIRST-VISIT ONBOARDING
+   The passcode is auto-generated locally and synced to the cloud, but is
+   otherwise invisible to a locked-out admin. These controls let any admin
+   see the current passcode (with a copy button) and walk a brand-new
+   install through saving the auto-generated PIN before continuing.
+   ========================================================================= */
+function getStoredPasscode(){
+  try {
+    const raw = localStorage.getItem('ccs_admin_pass');
+    if (!raw) return '';
+    // Same shape as supabase-config.js writes: JSON.stringify("123456")
+    // -> raw is "\"123456\"" -> JSON.parse returns the string "123456".
+    // If we ever read a raw unencoded value (legacy), coerce to a string
+    // instead of letting JSON.parse turn it into a number.
+    try { return String(JSON.parse(raw)); } catch(e) { return String(raw); }
+  } catch(e) { return ''; }
+}
+
+function copyToClipboard(text, onOk){
+  if (!text) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ if (onOk) onOk(); }).catch(function(){ fallbackCopy(text, onOk); });
+  } else fallbackCopy(text, onOk);
+}
+function fallbackCopy(text, onOk){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (onOk) onOk();
+  } catch(e){}
+}
+
+// "Show current passcode" link on the gate
+const gateRevealBtn = $('gateRevealBtn');
+if (gateRevealBtn) {
+  gateRevealBtn.addEventListener('click', function(){
+    const pin = getStoredPasscode();
+    const val = $('gatePassValue');
+    if (val) val.textContent = pin || 'not set';
+    const box = $('gateRevealBox');
+    if (box) box.style.display = pin ? 'flex' : 'none';
+    gateRevealBtn.style.display = 'none';
+  });
+}
+const gateCopyBtn = $('gateCopyBtn');
+if (gateCopyBtn) {
+  gateCopyBtn.addEventListener('click', function(){
+    const pin = getStoredPasscode();
+    if (!pin){ toast('No passcode set yet', true); return; }
+    copyToClipboard(pin, function(){ toast('Passcode copied'); });
+  });
+}
+
+// First-visit onboarding banner: shown until the admin acknowledges the PIN
+function maybeShowOnboard(){
+  try {
+    if (localStorage.getItem('ccs_passcode_acknowledged') === '1') return;
+    const pin = getStoredPasscode();
+    if (!pin) return;
+    const pinEl = $('onboardPin');
+    if (pinEl) pinEl.textContent = pin;
+    const ob = $('onboardBanner');
+    if (ob) ob.style.display = 'block';
+  } catch(e){}
+}
+const onboardDone = $('onboardDone');
+if (onboardDone) {
+  onboardDone.addEventListener('click', function(){
+    try { localStorage.setItem('ccs_passcode_acknowledged', '1'); } catch(e){}
+    const ob = $('onboardBanner');
+    if (ob) ob.style.display = 'none';
+  });
+}
+const onboardCopy = $('onboardCopy');
+if (onboardCopy) {
+  onboardCopy.addEventListener('click', function(){
+    const pin = getStoredPasscode();
+    if (!pin) return;
+    copyToClipboard(pin, function(){ toast('Passcode copied'); });
+  });
+}
+
 function initShell(){
   const src = (CONFIG.LOGO_SRC || '').trim();
   [$('brandLogo'), $('gateLogo')].forEach(function(img){
@@ -1944,6 +2053,7 @@ function initShell(){
 
   loadNames();
   loadAll();
+  maybeShowOnboard(); // show first-visit PIN banner if not yet acknowledged
 }
 
 /* =========================================================================
@@ -2449,7 +2559,11 @@ $('savePass').addEventListener('click', async function(){
 
   // 1) Save locally FIRST and update the on-screen display immediately so the
   //    user sees their new passcode without waiting for the cloud round-trip.
+  //    Also stamp `ccs_passcode_set_at` so the next pullSettings() does NOT
+  //    overwrite the new passcode with the (still-old) cloud value while the
+  //    cloud upsert is in flight or has silently failed.
   write(K_PASS, a);
+  try { localStorage.setItem('ccs_passcode_set_at', String(Date.now())); } catch (e) {}
   $('np1').value = '';
   $('np2').value = '';
   showCurrentPass();
@@ -2661,5 +2775,112 @@ setInterval(function(){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d842bb7fb3dbfd',t:'MTc4NzEzMzA5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d88bcf2d0c5bdd',t:'MTc4NzEzNjA4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>m() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  if (coarsePointer || reducedMotion){
+    // Static cyber background for touch devices & reduced-motion users.
+    initBinaryCanvas();
+    drawBinaryRain();
+    window.addEventListener('resize', function(){ initBinaryCanvas(); drawBinaryRain(); });
+  } else {
+    let rainRunning = true;
+
+    function animateBinary() {
+      if (!rainRunning) return;
+      drawBinaryRain();
+      setTimeout(() => {
+        requestAnimationFrame(animateBinary);
+      }, 45);
+    }
+
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden){
+        rainRunning = false;
+      } else if (!rainRunning){
+        rainRunning = true;
+        animateBinary();
+      }
+    });
+
+    window.addEventListener('resize', initBinaryCanvas);
+    initBinaryCanvas();
+    animateBinary();
+  }
+}
+
+// 3D Card Interactive Tilt - mouse devices ONLY.
+// On phones this never runs, so cards are never mid-transform while the user
+// scrolls or taps an event type (that constant re-transform WAS the glitch).
+if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const cards = document.querySelectorAll('.card');
+  let targetX = 0, targetY = 0;
+  let currentX = 0, currentY = 0;
+  let tiltCleared = false;
+
+  window.addEventListener('mousemove', (e) => {
+    targetX = (window.innerWidth / 2 - e.clientX) / 32;
+    targetY = (window.innerHeight / 2 - e.clientY) / 32;
+  });
+
+  function updateCardTilt() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+
+    const settled = Math.abs(currentX) < 0.001 && Math.abs(currentY) < 0.001 &&
+                    Math.abs(targetX) < 0.001 && Math.abs(targetY) < 0.001;
+    if (!settled){
+      cards.forEach(c => {
+        c.style.transform = `rotateY(${-currentX}deg) rotateX(${currentY}deg)`;
+      });
+      tiltCleared = false;
+    } else if (!tiltCleared){
+      // Fully back at rest: release the inline transform so the card stops
+      // redrawing itself - cheaper compositing even on desktop.
+      cards.forEach(c => { c.style.transform = ''; });
+      tiltCleared = true;
+    }
+    requestAnimationFrame(updateCardTilt);
+  }
+  updateCardTilt();
+}
+
+window.addEventListener('storage', function(){ syncAll(); renderPick(); renderHist(); });
+
+setInterval(function(){
+  var evBefore = JSON.stringify(events);
+  var histBefore = localStorage.getItem(K_HIST) || '';
+  syncAll();
+  if (JSON.stringify(events) !== evBefore || (localStorage.getItem(K_HIST) || '') !== histBefore){
+    renderPick();
+    renderHist();
+  } else {
+    flushMenuRefresh(); // apply any refresh that was skipped while a dropdown was open
+  }
+}, 5000);
+
+initShell();
+renderTypeDropdown('assembly');
+$('nDate').value = isoToday();
+renderPick();
+renderHist();
+</script>
+
+<!-- Cloud sync: auto-push event changes -->
+<script>
+setInterval(function(){
+  if (window.ccsSupabase && ccsSupabase.watchEvents) ccsSupabase.watchEvents();
+}, 4000);
+</script>
+
+<!-- Supabase SDK & Dual-Mode Sync Engine -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+
+</body>
 </html>
