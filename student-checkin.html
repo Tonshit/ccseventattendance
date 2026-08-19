@@ -1822,10 +1822,20 @@ function handleScan(text){
     return;
   }
   stopScan();
+  // Show exactly what was read before any attendance record is submitted.
+  // This lets the student reject a QR from the wrong event.
+  var action = (myAttendance()[ev.id] && myAttendance()[ev.id].out == null) ? 'record your time out' : 'record your check in';
+  var confirmed = window.confirm('QR scanned successfully.\n\nEvent: ' + ev.name + '\nCode: ' + c + '\n\nContinue to ' + action + '?');
+  if (!confirmed){
+    $('code').value = '';
+    $('peek').classList.remove('show');
+    toast('Scan cancelled. Please scan the correct event QR.', true);
+    return;
+  }
   $('code').value = c;
   $('code').dispatchEvent(new Event('input'));
   if (navigator.vibrate) navigator.vibrate(60);
-  toast('QR scanned - checking you in');
+  toast('QR confirmed - submitting attendance');
   setTimeout(function(){ $('submit').click(); }, 350);
 }
 
@@ -1990,5 +2000,5 @@ if (!$('code').value) $('code').focus();
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d949bd6d0bdb23',t:'MTc4NzE0Mzg2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d97991cb485bdd',t:'MTc4NzE0NTgyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
