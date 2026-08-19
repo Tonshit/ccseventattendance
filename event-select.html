@@ -121,113 +121,6 @@ body::before{
   100% { transform: translate(-20px, -25px) scale(0.95); }
 }
 
-/* Organizer Gate Modal Overlay */
-.gate{
-  position:fixed;
-  inset:0;
-  z-index:80;
-  display:grid;
-  place-items:center;
-  padding:22px;
-  background:rgba(3, 7, 18, 0.96);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-}
-.gate.hide{ display:none; }
-
-.gate-box{
-  width:100%;
-  max-width:340px;
-  text-align:center;
-  background:rgba(7, 14, 46, 0.88);
-  border:1px solid rgba(56, 189, 248, 0.3);
-  border-radius:24px;
-  padding:28px 22px 24px;
-  box-shadow:0 30px 60px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.15);
-  animation:pop .25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes pop {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.gate-logo-wrapper {
-  position: relative;
-  width: 92px;
-  height: 92px;
-  margin: 0 auto 16px;
-  display: grid;
-  place-items: center;
-}
-
-.gate-box img{
-  width:82px;
-  height:82px;
-  border-radius:50%;
-  background:var(--navy-900);
-  padding:4px;
-  object-fit:contain;
-  border:1.5px solid var(--cyan-400);
-  box-shadow:0 0 20px rgba(56, 189, 248, 0.4);
-}
-
-.gate-box h1{
-  font-size:16px;
-  font-weight:800;
-  color:#fff;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  margin:10px 0 4px;
-  background:linear-gradient(135deg, #ffffff 30%, var(--cyan-300) 100%);
-  -webkit-background-clip:text;
-  background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.gate-box p{
-  font-size:11.5px;
-  color:var(--cyan-300);
-  font-family:monospace, var(--font);
-  font-weight:600;
-  margin-bottom:18px;
-}
-
-.gate-box input{
-  width:100%;
-  border:1.5px solid rgba(56, 189, 248, 0.3);
-  background:rgba(10, 20, 64, 0.85);
-  color:#fff;
-  font-family:monospace, var(--font);
-  font-size:22px;
-  font-weight:900;
-  letter-spacing:.35em;
-  text-align:center;
-  padding:15px;
-  border-radius:14px;
-  outline:0;
-  transition:all 0.25s ease;
-  box-shadow:inset 0 2px 6px rgba(0,0,0,0.45);
-}
-.gate-box input:focus{
-  border-color:var(--cyan-400);
-  box-shadow:0 0 0 4px rgba(56, 189, 248, 0.25), 0 0 20px rgba(56, 189, 248, 0.35), inset 0 2px 6px rgba(0,0,0,0.45);
-}
-
-.gate-err{
-  display:none;
-  font-size:11.5px;
-  color:var(--red);
-  font-weight:700;
-  margin-top:10px;
-  animation:shakeErr 0.3s ease;
-}
-@keyframes shakeErr {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-}
-.gate-err.show{ display:block; }
-.gate-hint{ font-size:10.5px; color:rgba(186, 230, 253, 0.5); margin-top:14px; font-family:monospace; }
-
 /* Sticky Top Bar */
 .topbar{
   position:sticky;
@@ -1230,7 +1123,7 @@ html, body{ touch-action:manipulation; }
   .card{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
   .cyber-dropdown-menu{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
   .nav{ backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
-  .gate, .confirm{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+  .confirm{ backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
   .toast{ backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
 }
 
@@ -1249,32 +1142,12 @@ html, body{ touch-action:manipulation; }
 <div class="cyber-orb cyber-orb-1"></div>
 <div class="cyber-orb cyber-orb-2"></div>
 
-<!-- Gate Modal to protect Organizer pages -->
-<div class="gate" id="gate">
-  <div class="gate-box">
-    <div class="gate-logo-wrapper">
-      <img id="gateLogo" src="logo.png" alt="CCS Logo" />
-    </div>
-    <h1>Organizer Access</h1>
-    <p>CCS Student Council Portal</p>
-    <input type="password" id="gatePin" inputmode="numeric" placeholder="PASSCODE" maxlength="12" autocomplete="off" />
-    <div class="gate-err" id="gateErr">&#9888; Incorrect Passcode</div>
-    <button class="btn navy glow-btn" id="gateBtn" style="margin-top:14px"><span>Unlock</span></button>
-    <div class="gate-hint" id="gateHint"></div>
-  </div>
-</div>
-
 <header class="topbar">
   <img class="logo" id="brandLogo" src="logo.png" alt="CCS Logo" />
   <div class="who">
     <h1>Select Event</h1>
     <p id="shellSub">Organizer</p>
   </div>
-  <button class="icon-btn" id="lock" aria-label="Lock">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-    </svg>
-  </button>
 </header>
 
 <div class="wrap">
@@ -1499,41 +1372,6 @@ html, body{ touch-action:manipulation; }
     </button>
   </div>
 
-  <!-- Admin Passcode Settings -->
-  <div class="card">
-    <div class="card-head"><h2>Settings</h2></div>
-    <div class="f">
-      <label class="f-label" for="np1">New Admin Passcode</label>
-      <div class="form-ctl">
-        <span class="f-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-        </span>
-        <input type="password" id="np1" inputmode="numeric" placeholder="New passcode (4+ characters)" maxlength="12" />
-      </div>
-    </div>
-    <div class="f">
-      <label class="f-label" for="np2">Repeat New Passcode</label>
-      <div class="form-ctl">
-        <span class="f-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6L9 17l-5-5"/>
-          </svg>
-        </span>
-        <input type="password" id="np2" inputmode="numeric" placeholder="Repeat the new passcode" maxlength="12" />
-      </div>
-    </div>
-    <button class="btn line glow-btn" id="savePass"><span>Save Passcode</span></button>
-    <div class="set-note">
-      <b>Current passcode:</b> <code id="curPass" style="font-size:16px;letter-spacing:3px;color:var(--cyan-300);background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);padding:2px 10px;border-radius:8px;">------</code>
-      <button class="btn line glow-btn" id="copyPass" style="margin:8px auto 0;padding:6px 14px;font-size:11px;width:auto;display:inline-flex;"><span>Copy Passcode</span></button>
-      <div style="font-size:11px;color:rgba(186,230,253,0.7);margin-top:6px;">
-        Shared with every admin device through the cloud. Show this to other admins so they can unlock the admin pages.
-      </div>
-    </div>
-  </div>
-
   <!-- History Events -->
   <div class="card" id="histCard" style="display:none">
     <div class="card-head">
@@ -1609,10 +1447,8 @@ const K_EV = "ccs_ev";
 const K_ATT = "ccs_ev_att";
 const K_ACTIVE = "ccs_ev_active";
 const K_ROSTER = "ccs_admin_roster";
-const K_UNLOCK = "ccs_ev_admin_unlocked";
 const K_HIST = "ccs_ev_history";
 const K_HISTV = "ccs_ev_history_view";
-const K_PASS = "ccs_admin_pass";
 const EXPORT_TTL_MS = 24 * 60 * 60 * 1000;
 
 const $ = id => document.getElementById(id);
@@ -1790,10 +1626,6 @@ function loadNames(){
   Object.keys(extra).forEach(function(id){ if (!names[id]) names[id] = extra[id]; });
 }
 
-function passcode(){
-  return read(K_PASS, null) || '';
-}
-
 function loadAll(){
   events = read(K_EV, null);
   if (!events){
@@ -1905,42 +1737,13 @@ setupDropdownToggle('evtTrigger', 'evtDropdown');
 setupDropdownToggle('typeTrigger', 'typeDropdown');
 setupDropdownToggle('delTrigger', 'delDropdown');
 
-/* Gate Unlock Logic */
-$('gateBtn').addEventListener('click', function(){
-  if ($('gatePin').value === passcode()){
-    $('gateErr').classList.remove('show');
-    $('gate').classList.add('hide');
-    try { sessionStorage.setItem(K_UNLOCK, '1'); } catch(e){}
-  } else {
-    $('gateErr').classList.add('show');
-    $('gatePin').value = '';
-    if (navigator.vibrate) navigator.vibrate(70);
-  }
-});
-
-$('gatePin').addEventListener('keydown', function(e){
-  if (e.key === 'Enter') $('gateBtn').click();
-});
-
-$('lock').addEventListener('click', function(){
-  try { sessionStorage.removeItem(K_UNLOCK); } catch(e){}
-  $('gatePin').value = '';
-  $('gate').classList.remove('hide');
-});
-
 function initShell(){
   const src = (CONFIG.LOGO_SRC || '').trim();
-  [$('brandLogo'), $('gateLogo')].forEach(function(img){
-    if (!img) return;
-    img.src = src || "logo.png";
-    img.onerror = function(){ img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23070E2E' stroke='%2338BDF8' stroke-width='4'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%237DD3FC' font-size='22' font-weight='900' font-family='monospace'%3ECCS%3C/text%3E%3C/svg%3E"; };
-  });
-
-  let unlocked = false;
-  try { unlocked = sessionStorage.getItem(K_UNLOCK) === '1'; } catch(e){}
-  if (unlocked) $('gate').classList.add('hide');
-
-  $('gateHint').textContent = '';
+  const brandLogo = $('brandLogo');
+  if (brandLogo){
+    brandLogo.src = src || "logo.png";
+    brandLogo.onerror = function(){ brandLogo.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23070E2E' stroke='%2338BDF8' stroke-width='4'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%237DD3FC' font-size='22' font-weight='900' font-family='monospace'%3ECCS%3C/text%3E%3C/svg%3E"; };
+  }
 
   loadNames();
   loadAll();
@@ -2408,69 +2211,6 @@ $('editEvt').addEventListener('click', function(){
   $('dateConflict').style.display = 'none';
   checkDateConflict(ev.date, editingId);
   window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-function showCurrentPass(){
-  const el = $('curPass');
-  if (el){
-    const pin = read(K_PASS, null);
-    el.textContent = pin || 'not set';
-  }
-}
-showCurrentPass();
-window.addEventListener('storage', showCurrentPass);
-
-$('copyPass').addEventListener('click', function(){
-  const pin = read(K_PASS, null);
-  if (!pin){ toast('No passcode set yet', true); return; }
-  if (navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(pin).then(function(){ toast('Passcode copied'); })
-      .catch(function(){ fallbackCopyPin(pin); });
-  } else fallbackCopyPin(pin);
-});
-
-function fallbackCopyPin(pin){
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = pin;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    toast('Passcode copied');
-  } catch(e){ toast('Passcode: ' + pin, false); }
-}
-
-$('savePass').addEventListener('click', async function(){
-  const a = $('np1').value.trim();
-  const b = $('np2').value.trim();
-  if (a.length < 4){ toast('Passcode must be at least 4 characters', true); return; }
-  if (a !== b){ toast('Passcodes do not match', true); return; }
-
-  // 1) Save locally FIRST and update the on-screen display immediately so the
-  //    user sees their new passcode without waiting for the cloud round-trip.
-  write(K_PASS, a);
-  $('np1').value = '';
-  $('np2').value = '';
-  showCurrentPass();
-  toast('Passcode updated - now ' + a);
-
-  // 2) Push to the cloud so other admin devices stay in sync. We AWAIT the
-  //    result so we can warn the user if it failed - otherwise a silent
-  //    failure here means the cloud still has the old passcode and a refresh
-  //    on any device will overwrite the user's new passcode back to the old
-  //    one (the "refresh resets it" symptom).
-  if (window.ccsSupabase && ccsSupabase.saveSetting) {
-    try {
-      const ok = await ccsSupabase.saveSetting('admin_pass', a);
-      if (ok === false) {
-        toast('Saved on this device only (cloud sync failed)', true);
-      }
-    } catch (e) {
-      console.warn('[CCS] admin_pass cloud save threw:', e && e.message);
-      toast('Saved on this device only (cloud sync failed)', true);
-    }
-  }
 });
 
 function renderHist(){
