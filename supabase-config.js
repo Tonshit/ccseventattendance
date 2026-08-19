@@ -87,6 +87,7 @@
     ADMIN_PASS: "ccs_admin_pass",
     TOMBSTONES: "ccs_ev_deleted",
     STUDENT_TOMBS: "ccs_students_deleted", // shared delete-list for students (synced through the settings table)
+    STUDENT_PENDING: "ccs_students_pending", // offline/new profile updates waiting for cloud confirmation
     ADMIN_TOMBS: "ccs_admins_deleted"      // shared delete-list for admins (synced through the settings table)
   };
 
@@ -426,7 +427,8 @@
         await this.syncNow();
         this.ensurePasscodeCloud();
         this.subscribeRealtime();
-        this.flush(); // push records made while offline (idempotent upsert)
+        // Cloud data is authoritative. Do not re-upload an arbitrary browser
+        // cache on startup; doing so can make reports differ between devices.
         this.sweepInactiveAccounts(); // remove accounts inactive for 1+ year (throttled: once/day)
       } catch (err) {
         console.warn("[CCS] Sync warning:", err && err.message);
@@ -454,36 +456,37 @@
       if (error) { console.warn("[CCS] pullStudents:", error.message); return getLocal(KEYS.STUDENTS, {}); }
 
       const tombs = readStudentTombs();
-      const profiles = getLocal(KEYS.STUDENTS, {});
-      const names = getLocal(KEYS.NAMES, {});
-      const auth = getLocal(KEYS.STUDENTS_AUTH, {});
-
-      // Purge tombstoned (admin-deleted) students from THIS device's cache so
-      // they can never "come back" here or be re-uploaded by flush().
-      tombs.forEach(function(id) {
-        delete profiles[id];
-        delete names[id];
-        delete auth[id];
-      });
+      const cachedProfiles = getLocal(KEYS.STUDENTS, {});
+      const cachedNames = getLocal(KEYS.NAMES, {});
+      const cachedAuth = getLocal(KEYS.STUDENTS_AUTH, {});
+      const pending = getLocal(KEYS.STUDENT_PENDING, {});
+      // When online, the registered-students table is authoritative. Build
+      // a fresh cache from it instead of merging old browser data into it.
+      // Only locally pending changes survive until their cloud upsert succeeds.
+      const profiles = {};
+      const names = {};
+      const auth = {};
 
       (data || []).forEach(function(r) {
         const p = studentFromRow(r);
-        if (!p || !p.id) return;
-        if (tombs.indexOf(p.id) !== -1) return; // deleted by an admin - stays deleted
+        if (!p || !p.id || tombs.indexOf(p.id) !== -1) return;
         profiles[p.id] = {
-          id: p.id,
-          name: p.name,
-          course: p.course,
-          year: p.year,
-          section: p.section,
-          role: 'student'
+          id: p.id, name: p.name, course: p.course, year: p.year,
+          section: p.section, role: 'student'
         };
         if (p.name) names[p.id] = p.name;
         const cred = credentialFromRow(r);
-        if (cred) {
-          const existing = auth[p.id] || {};
-          auth[p.id] = { password: cred, createdAt: existing.createdAt || r.created_at };
-        }
+        if (cred) auth[p.id] = { password: cred, createdAt: (cachedAuth[p.id] || {}).createdAt || r.created_at };
+      });
+
+      // Keep genuine offline registrations/profile saves in the cache so the
+      // next flush can upload them. They are removed from this list only after
+      // Supabase confirms the upsert.
+      Object.keys(pending).forEach(function(id) {
+        if (tombs.indexOf(id) !== -1 || !cachedProfiles[id]) return;
+        profiles[id] = cachedProfiles[id];
+        if (cachedNames[id]) names[id] = cachedNames[id];
+        if (cachedAuth[id]) auth[id] = cachedAuth[id];
       });
 
       setLocal(KEYS.STUDENTS, profiles);
@@ -514,6 +517,14 @@
           if (this.isOnline()) this.saveSetting('student_deleted', JSON.stringify(tombs));
         }
       }
+      // Mark this record before the request. This protects a new/offline
+      // registration from being replaced by an older browser cache on another
+      // device while the cloud request is still in progress.
+      if (sid) {
+        const pending = getLocal(KEYS.STUDENT_PENDING, {});
+        pending[String(sid)] = new Date().toISOString();
+        setLocal(KEYS.STUDENT_PENDING, pending);
+      }
       if (!this.isOnline()) return false;
       const row = studentToRow(profile, password);
       if (!row || !row.school_id) return false;
@@ -531,8 +542,18 @@
       // auto-cleanup. Background flushes never touch last_active.
       if (isInteractiveAuth) row.last_active = new Date().toISOString();
       const { error } = await sb.from('students').upsert(row, { onConflict: 'school_id' });
-      if (error) console.warn("[CCS] pushStudent:", error.message);
-      return !error;
+      if (error) {
+        console.warn("[CCS] pushStudent:", error.message);
+        return false;
+      }
+      // Cloud confirmed this exact profile. It is no longer an offline-only
+      // record and future pulls will use the one shared Supabase version.
+      if (sid) {
+        const pending = getLocal(KEYS.STUDENT_PENDING, {});
+        delete pending[String(sid)];
+        setLocal(KEYS.STUDENT_PENDING, pending);
+      }
+      return true;
     },
 
     // Delete one or more student accounts everywhere (local + cloud), and
@@ -553,6 +574,9 @@
         delete profiles[id];
         delete names[id];
         delete auth[id];
+        const pending = getLocal(KEYS.STUDENT_PENDING, {});
+        delete pending[id];
+        setLocal(KEYS.STUDENT_PENDING, pending);
       });
       setLocal(KEYS.STUDENTS, profiles);
       setLocal(KEYS.NAMES, names);
@@ -711,13 +735,13 @@
       // local-only fields intact while still letting the cloud row win for
       // the columns it actually has (name, venue, open, code, etc.).
       const merge = function(localList, remoteList) {
-        const byId = {};
-        (localList || []).forEach(function(e) { if (e && e.id) byId[e.id] = e; });
-        (remoteList || []).forEach(function(e) {
-          if (!e || !e.id) return;
-          byId[e.id] = Object.assign({}, byId[e.id] || {}, e);
-        });
-        return Object.keys(byId).map(function(id) { return byId[id]; });
+        const localById = {};
+        (localList || []).forEach(function(e) { if (e && e.id) localById[e.id] = e; });
+        // Include only event IDs returned by Supabase. This retains the
+        // browser-only QR bookkeeping for matching events but prevents a
+        // stale, device-only event from appearing in an export.
+        return (remoteList || []).filter(function(e) { return e && e.id; })
+          .map(function(e) { return Object.assign({}, localById[e.id] || {}, e); });
       };
 
       const mergedActive = merge(getLocal(KEYS.EVENTS, []), active);
@@ -753,13 +777,14 @@
       const { data, error } = await sb.from('attendance').select('*');
       if (error) { console.warn("[CCS] pullAttendance:", error.message); return getLocal(KEYS.ATTENDANCE, {}); }
 
-      const map = getLocal(KEYS.ATTENDANCE, {});
+      // Build the attendance cache only from Supabase. A merge leaves old
+      // device-only check-ins behind and causes different PDF exports.
+      const map = {};
       (data || []).forEach(function(r) {
         const rec = attFromRow(r);
         if (!rec || !r.event_id || !r.student_id) return;
         if (!map[r.event_id]) map[r.event_id] = {};
-        const prev = map[r.event_id][r.student_id] || {};
-        map[r.event_id][r.student_id] = Object.assign({}, prev, rec);
+        map[r.event_id][r.student_id] = rec;
       });
 
       setLocal(KEYS.ATTENDANCE, map);
@@ -816,22 +841,11 @@
       if (error) return;
       (data || []).forEach(function(r) {
         if (r.key === 'admin_pass') {
-          // Last-write-wins by timestamp. The cloud row carries Supabase's
-          // own `updated_at`; the local write stamps `ccs_passcode_set_at`.
-          // Without this, every refresh would pull the (possibly older)
-          // cloud value and overwrite the user's just-saved local passcode.
-          // JSON.stringify the value before storing so JSON.parse returns a
-          // STRING (writing the raw value would parse back as a NUMBER and
-          // break the gate's strict-equality passcode check).
-          try {
-            const cloudTs = r.updated_at ? Date.parse(r.updated_at) : 0;
-            const localTs = parseInt(localStorage.getItem('ccs_passcode_set_at') || '0', 10);
-            const localRaw = localStorage.getItem(KEYS.ADMIN_PASS);
-            if (!localRaw || cloudTs > localTs) {
-              localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(r.value)));
-              try { localStorage.setItem('ccs_passcode_set_at', String(Date.now())); } catch (e) {}
-            }
-          } catch (e) {}
+          // IMPORTANT: JSON.stringify the cloud value before storing. The
+          // rest of the app reads this key via JSON.parse(); writing the raw
+          // value (e.g. "123456") would be parsed back as the NUMBER 123456,
+          // which then breaks the admin gate's strict-equality passcode check.
+          try { localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(r.value))); } catch (e) {}
         }
         if (r.key === 'student_deleted' || r.key === 'admins_deleted') {
           try {
@@ -849,14 +863,8 @@
       try {
         // Same JSON.stringify rule as pullSettings - keep the on-disk shape
         // consistent so JSON.parse returns a STRING (never a number) for the
-        // admin passcode. Mirrors the gate's strict-equality check. Also
-        // stamp `ccs_passcode_set_at` so the next pullSettings() will treat
-        // this local value as "newer than cloud" until the cloud upsert's
-        // updated_at catches up.
-        if (key === 'admin_pass') {
-          localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(value)));
-          try { localStorage.setItem('ccs_passcode_set_at', String(Date.now())); } catch (e) {}
-        }
+        // admin passcode. Mirrors the gate's strict-equality check.
+        if (key === 'admin_pass') localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(value)));
         if (key === 'student_deleted' || key === 'admins_deleted') {
           const v = JSON.parse(value);
           if (Array.isArray(v)) {
@@ -1095,7 +1103,7 @@
     }
     window.addEventListener('online', function() {
       if (ccsSupabase.isOnline()) {
-        ccsSupabase.syncNow().then(function() { ccsSupabase.flush(); });
+        ccsSupabase.syncNow();
       }
     });
   }
