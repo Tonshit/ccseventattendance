@@ -211,11 +211,15 @@
 
   // Bootstrap the admin gate passcode: if no passcode exists anywhere,
   // generate a random one now (locally) and push it to the settings table.
+  // IMPORTANT: store via JSON.stringify so JSON.parse (used by every page's
+  // read()) returns a STRING. Writing the raw pin directly turns a numeric
+  // PIN like "123456" into the NUMBER 123456 on the next read, which then
+  // breaks the gate's strict-equality check (`"123456" === 123456` is false).
   function ensureLocalPasscode() {
     try {
       if (!localStorage.getItem(KEYS.ADMIN_PASS)) {
         const pin = randomDigits(6);
-        localStorage.setItem(KEYS.ADMIN_PASS, pin);
+        localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(pin));
         // The PIN is also shown on the Select page (Settings -> Current
         // passcode) with a copy button; logged here as a fallback.
         console.log("[CCS] Admin gate PIN for this browser: " + pin);
@@ -812,7 +816,11 @@
       if (error) return;
       (data || []).forEach(function(r) {
         if (r.key === 'admin_pass') {
-          try { localStorage.setItem(KEYS.ADMIN_PASS, r.value); } catch (e) {}
+          // IMPORTANT: JSON.stringify the cloud value before storing. The
+          // rest of the app reads this key via JSON.parse(); writing the raw
+          // value (e.g. "123456") would be parsed back as the NUMBER 123456,
+          // which then breaks the admin gate's strict-equality passcode check.
+          try { localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(r.value))); } catch (e) {}
         }
         if (r.key === 'student_deleted' || r.key === 'admins_deleted') {
           try {
@@ -828,7 +836,10 @@
 
     async saveSetting(key, value) {
       try {
-        if (key === 'admin_pass') localStorage.setItem(KEYS.ADMIN_PASS, value);
+        // Same JSON.stringify rule as pullSettings - keep the on-disk shape
+        // consistent so JSON.parse returns a STRING (never a number) for the
+        // admin passcode. Mirrors the gate's strict-equality check.
+        if (key === 'admin_pass') localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(value)));
         if (key === 'student_deleted' || key === 'admins_deleted') {
           const v = JSON.parse(value);
           if (Array.isArray(v)) {
