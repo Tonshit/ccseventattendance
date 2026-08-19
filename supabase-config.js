@@ -816,11 +816,22 @@
       if (error) return;
       (data || []).forEach(function(r) {
         if (r.key === 'admin_pass') {
-          // IMPORTANT: JSON.stringify the cloud value before storing. The
-          // rest of the app reads this key via JSON.parse(); writing the raw
-          // value (e.g. "123456") would be parsed back as the NUMBER 123456,
-          // which then breaks the admin gate's strict-equality passcode check.
-          try { localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(r.value))); } catch (e) {}
+          // Last-write-wins by timestamp. The cloud row carries Supabase's
+          // own `updated_at`; the local write stamps `ccs_passcode_set_at`.
+          // Without this, every refresh would pull the (possibly older)
+          // cloud value and overwrite the user's just-saved local passcode.
+          // JSON.stringify the value before storing so JSON.parse returns a
+          // STRING (writing the raw value would parse back as a NUMBER and
+          // break the gate's strict-equality passcode check).
+          try {
+            const cloudTs = r.updated_at ? Date.parse(r.updated_at) : 0;
+            const localTs = parseInt(localStorage.getItem('ccs_passcode_set_at') || '0', 10);
+            const localRaw = localStorage.getItem(KEYS.ADMIN_PASS);
+            if (!localRaw || cloudTs > localTs) {
+              localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(r.value)));
+              try { localStorage.setItem('ccs_passcode_set_at', String(Date.now())); } catch (e) {}
+            }
+          } catch (e) {}
         }
         if (r.key === 'student_deleted' || r.key === 'admins_deleted') {
           try {
@@ -838,8 +849,14 @@
       try {
         // Same JSON.stringify rule as pullSettings - keep the on-disk shape
         // consistent so JSON.parse returns a STRING (never a number) for the
-        // admin passcode. Mirrors the gate's strict-equality check.
-        if (key === 'admin_pass') localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(value)));
+        // admin passcode. Mirrors the gate's strict-equality check. Also
+        // stamp `ccs_passcode_set_at` so the next pullSettings() will treat
+        // this local value as "newer than cloud" until the cloud upsert's
+        // updated_at catches up.
+        if (key === 'admin_pass') {
+          localStorage.setItem(KEYS.ADMIN_PASS, JSON.stringify(String(value)));
+          try { localStorage.setItem('ccs_passcode_set_at', String(Date.now())); } catch (e) {}
+        }
         if (key === 'student_deleted' || key === 'admins_deleted') {
           const v = JSON.parse(value);
           if (Array.isArray(v)) {
