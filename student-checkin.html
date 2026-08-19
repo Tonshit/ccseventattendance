@@ -1443,7 +1443,14 @@ function findByCode(code){
   const c = cleanCode(code);
   if (!c) return null;
   const all = allEvents();
-  const hit = all.filter(function(e){ return String(e.code).toUpperCase() === c; });
+  // Accept the immediately previous rotating code for its short grace period.
+  // This prevents a scan at the exact moment the admin display rotates from
+  // being rejected, including during the time-out-only window.
+  const now = Date.now();
+  const hit = all.filter(function(e){
+    return String(e.code || '').toUpperCase() === c ||
+      (e.prevCode && String(e.prevCode).toUpperCase() === c && Number(e.prevUntil || 0) >= now);
+  });
   return hit.length ? hit[0] : null;
 }
 
@@ -1669,7 +1676,9 @@ $('submit').addEventListener('click', async function(){
   if (att[ev.id][id]){
     const prev = att[ev.id][id];
     const sinceIn = prev.ts ? (Date.now() - Date.parse(prev.ts)) : 0;
-    if (!prev.out && sinceIn > 60000){
+    // A second valid scan records time out. Use an explicit null check so
+    // a legitimate 00:00 time-out is not treated as missing.
+    if (prev.out == null && sinceIn > 60000){
       prev.out = nowMins();
       prev.outTs = new Date().toISOString();
       if (!write(K_ATT, att)){
@@ -1681,7 +1690,7 @@ $('submit').addEventListener('click', async function(){
       finish(ev, id, prev.name || p.name, prev.at, prev.late, false, prev.out);
       return;
     }
-    finish(ev, id, prev.name || p.name, prev.at, prev.late, true, prev.out || null, !!prev.outOnly);
+    finish(ev, id, prev.name || p.name, prev.at, prev.late, true, prev.out != null ? prev.out : null, !!prev.outOnly);
     return;
   }
 
@@ -1981,5 +1990,5 @@ if (!$('code').value) $('code').focus();
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d949bd6d0bdb23',t:'MTc4NzE0Mzg2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
