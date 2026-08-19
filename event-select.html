@@ -2441,18 +2441,36 @@ function fallbackCopyPin(pin){
   } catch(e){ toast('Passcode: ' + pin, false); }
 }
 
-$('savePass').addEventListener('click', function(){
+$('savePass').addEventListener('click', async function(){
   const a = $('np1').value.trim();
   const b = $('np2').value.trim();
   if (a.length < 4){ toast('Passcode must be at least 4 characters', true); return; }
   if (a !== b){ toast('Passcodes do not match', true); return; }
 
+  // 1) Save locally FIRST and update the on-screen display immediately so the
+  //    user sees their new passcode without waiting for the cloud round-trip.
   write(K_PASS, a);
   $('np1').value = '';
   $('np2').value = '';
   showCurrentPass();
-  if (window.ccsSupabase && ccsSupabase.saveSetting) ccsSupabase.saveSetting('admin_pass', a);
   toast('Passcode updated - now ' + a);
+
+  // 2) Push to the cloud so other admin devices stay in sync. We AWAIT the
+  //    result so we can warn the user if it failed - otherwise a silent
+  //    failure here means the cloud still has the old passcode and a refresh
+  //    on any device will overwrite the user's new passcode back to the old
+  //    one (the "refresh resets it" symptom).
+  if (window.ccsSupabase && ccsSupabase.saveSetting) {
+    try {
+      const ok = await ccsSupabase.saveSetting('admin_pass', a);
+      if (ok === false) {
+        toast('Saved on this device only (cloud sync failed)', true);
+      }
+    } catch (e) {
+      console.warn('[CCS] admin_pass cloud save threw:', e && e.message);
+      toast('Saved on this device only (cloud sync failed)', true);
+    }
+  }
 });
 
 function renderHist(){
@@ -2643,5 +2661,5 @@ setInterval(function(){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d842bb7fb3dbfd',t:'MTc4NzEzMzA5Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
